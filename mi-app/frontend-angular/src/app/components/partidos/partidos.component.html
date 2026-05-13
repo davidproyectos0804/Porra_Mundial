@@ -1,4 +1,53 @@
-<div>
-  <h1>⚽ Partidos</h1>
-  <p>Próximamente...</p>
+<div class="partidos-page">
+
+  <!-- Header -->
+  <header>
+    <h1>⚽ Porra Mundial 2026</h1>
+    <div class="usuario-info">
+      <span>{{ usuario?.nombre }}</span>
+      <span>{{ usuario?.puntosTotales }} pts</span>
+      <button (click)="logout()">Salir</button>
+    </div>
+  </header>
+
+  <!-- Navegación entre jornadas -->
+  <div class="jornada-nav">
+    <button (click)="jornadadAnterior()" [disabled]="faseIndex() === 0">←</button>
+    <h2>{{ faseActual()?.nombre }}</h2>
+    <button (click)="jornadaSiguiente()" [disabled]="faseIndex() === fases().length - 1">→</button>
+  </div>
+
+  <!-- Cargando -->
+  @if (cargando()) {
+    <p class="cargando">Cargando partidos...</p>
+  }
+
+  <!-- Partidos -->
+  @if (!cargando()) {
+    <div class="partidos-lista">
+      @for (partido of partidos(); track partido._id) {
+        <div class="partido-card">
+          <span class="fecha">{{ partido.fechaHora | date:'dd/MM HH:mm' }}</span>
+          <div class="equipos">
+            <div class="equipo">
+              <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" />
+              <span>{{ partido.equipoLocal.nombre }}</span>
+            </div>
+            <div class="marcador">
+              @if (partido.finalizado) {
+                <span>{{ partido.golesLocal }} - {{ partido.golesVisitante }}</span>
+              } @else {
+                <span>vs</span>
+              }
+            </div>
+            <div class="equipo visitante">
+              <span>{{ partido.equipoVisitante.nombre }}</span>
+              <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" />
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
 </div>

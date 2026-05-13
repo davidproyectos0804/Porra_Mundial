@@ -1,0 +1,101 @@
+.partidos-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+}
+
+.usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.usuario-info button {
+  padding: 0.4rem 0.8rem;
+  background: #e63946;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.jornada-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.jornada-nav button {
+  padding: 0.5rem 1rem;
+  font-size: 1.2rem;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.jornada-nav button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cargando {
+  text-align: center;
+  color: #888;
+}
+
+.partido-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.fecha {
+  font-size: 0.8rem;
+  color: #888;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.equipos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.equipo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.equipo.visitante {
+  flex-direction: row-reverse;
+}
+
+.equipo img {
+  width: 40px;
+  height: auto;
+}
+
+.marcador {
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 0 1rem;
+}
