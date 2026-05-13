@@ -5,13 +5,13 @@ const express = require('express');
 const router = express.Router();
 const helloController = require('../controllers/helloController');
 const usersController = require('../controllers/usersController');
+const authRoutes = require('./authRoutes');
 
-// Endpoint: GET /api/hello
-// Devuelve un mensaje de saludo desde el backend
+// Rutas de prueba (se eliminarán más adelante)
 router.get('/hello', helloController.getHello);
-
-// Endpoint: GET /api/users
-// Devuelve una lista mock de usuarios
 router.get('/users', usersController.getUsers);
+
+// Rutas de autenticación
+router.use('/auth', authRoutes);
 
 module.exports = router;
