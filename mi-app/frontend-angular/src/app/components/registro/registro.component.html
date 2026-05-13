@@ -1,0 +1,64 @@
+<div class="registro-container">
+  <div class="registro-box">
+    <h1>⚽ Porra Mundial 2026</h1>
+    <h2>Crear cuenta</h2>
+
+    @if (error) {
+      <p class="error">{{ error }}</p>
+    }
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="campo">
+        <label>Nombre</label>
+        <input
+          type="text"
+          [(ngModel)]="datos.nombre"
+          name="nombre"
+          placeholder="Tu nombre"
+          required
+        />
+      </div>
+
+      <div class="campo">
+        <label>Email</label>
+        <input
+          type="email"
+          [(ngModel)]="datos.email"
+          name="email"
+          placeholder="tu@email.com"
+          required
+        />
+      </div>
+
+      <div class="campo">
+        <label>Contraseña</label>
+        <input
+          type="password"
+          [(ngModel)]="datos.password"
+          name="password"
+          placeholder="Tu contraseña"
+          required
+        />
+      </div>
+
+      <div class="campo">
+        <label>Confirmar contraseña</label>
+        <input
+          type="password"
+          [(ngModel)]="datos.confirmarPassword"
+          name="confirmarPassword"
+          placeholder="Repite tu contraseña"
+          required
+        />
+      </div>
+
+      <button type="submit" [disabled]="cargando">
+        {{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <p class="link">
+      ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+    </p>
+  </div>
+</div>

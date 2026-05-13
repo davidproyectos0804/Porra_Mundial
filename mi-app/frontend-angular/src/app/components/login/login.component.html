@@ -1,0 +1,43 @@
+<div class="login-container">
+  <div class="login-box">
+    <h1>⚽ Porra Mundial 2026</h1>
+    <h2>Iniciar sesión</h2>
+
+    <!-- Mensaje de error -->
+    @if (error) {
+      <p class="error">{{ error }}</p>
+    }
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="campo">
+        <label>Email</label>
+        <input
+          type="email"
+          [(ngModel)]="datos.email"
+          name="email"
+          placeholder="tu@email.com"
+          required
+        />
+      </div>
+
+      <div class="campo">
+        <label>Contraseña</label>
+        <input
+          type="password"
+          [(ngModel)]="datos.password"
+          name="password"
+          placeholder="Tu contraseña"
+          required
+        />
+      </div>
+
+      <button type="submit" [disabled]="cargando">
+        {{ cargando ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <p class="link">
+      ¿No tienes cuenta? <a routerLink="/registro">Regístrate aquí</a>
+    </p>
+  </div>
+</div>
