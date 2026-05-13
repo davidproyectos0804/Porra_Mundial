@@ -3,32 +3,42 @@
 
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
 const routes = require('./routes');
 
 // Crear aplicación Express
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middleware: CORS - Permite que el frontend Angular (localhost:4200) acceda a la API
+// Middleware: CORS
 app.use(cors({
   origin: 'http://localhost:4200',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Middleware: Parsear JSON en el body de las peticiones
+// Middleware: Parsear JSON
 app.use(express.json());
 
 // Middleware: Rutas de la API
 app.use('/api', routes);
 
-// Ruta de prueba para verificar que el servidor está funcionando
+// Ruta de prueba
 app.get('/', (req, res) => {
   res.json({ message: 'Backend API is running!' });
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-  console.log(`📡 API endpoints available at http://localhost:${PORT}/api`);
-});
+// Conectar a MongoDB Atlas y arrancar servidor
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('✅ Conectado a MongoDB Atlas');
+    app.listen(PORT, () => {
+      console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+      console.log(`📡 API endpoints available at http://localhost:${PORT}/api`);
+    });
+  })
+  .catch((error) => {
+    console.error('❌ Error conectando a MongoDB:', error.message);
+  });
