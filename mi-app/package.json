@@ -1,0 +1,14 @@
+{
+  "name": "mi-app-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack project with Angular frontend and Node.js/Express backend",
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend-node && node server.js",
+    "frontend": "cd frontend-angular && ng serve",
+    "install:all": "npm install && cd backend-node && npm install && cd ../frontend-angular && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
