@@ -32,8 +32,12 @@ export class RegistroComponent {
       email: this.datos.email,
       password: this.datos.password
     }).subscribe({
-      next: () => {
-        this.router.navigate(['/partidos']);
+      next: (res) => {
+        if (res.usuario.rol === 'admin') {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/partidos']);
+        }
       },
       error: (err) => {
         this.error = err.error?.message || 'Error al registrarse';

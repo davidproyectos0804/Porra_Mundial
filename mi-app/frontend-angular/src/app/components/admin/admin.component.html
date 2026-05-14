@@ -1,0 +1,81 @@
+<div class="admin-page">
+
+  <header>
+    <h1>⚙️ Panel de Admin</h1>
+    <div class="header-links">
+      <a routerLink="/partidos">Ver partidos</a>
+      <a routerLink="/ranking">Ver ranking</a>
+      <button (click)="logout()">Salir</button>
+    </div>
+  </header>
+
+  <!-- Selector de fases -->
+  <div class="fases-selector">
+    @for (fase of fases(); track fase._id) {
+      <button
+        (click)="cambiarFase(fase)"
+        [class.activo]="faseActual()?._id === fase._id">
+        {{ fase.nombre }}
+      </button>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p class="cargando">Cargando partidos...</p>
+  }
+
+  @if (!cargando()) {
+    <div class="partidos-lista">
+      @for (partido of partidos(); track partido._id) {
+        <div class="partido-card" [class.finalizado]="partido.finalizado">
+
+          <span class="fecha">{{ partido.fechaHora | date:'dd/MM HH:mm' }}</span>
+
+          <div class="equipos">
+            <div class="equipo">
+              <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" />
+              <span>{{ partido.equipoLocal.nombre }}</span>
+            </div>
+            <div class="marcador">
+              @if (partido.finalizado) {
+                <span>{{ partido.golesLocal }} - {{ partido.golesVisitante }}</span>
+              } @else {
+                <span>vs</span>
+              }
+            </div>
+            <div class="equipo visitante">
+              <span>{{ partido.equipoVisitante.nombre }}</span>
+              <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" />
+            </div>
+          </div>
+
+          <!-- Meter resultado -->
+          @if (!partido.finalizado) {
+            <div class="resultado-form">
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="inputsResultado[partido._id].local"
+                class="input-goles"
+              />
+              <span>-</span>
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="inputsResultado[partido._id].visitante"
+                class="input-goles"
+              />
+              <button (click)="meterResultado(partido._id)">Confirmar resultado</button>
+            </div>
+          }
+
+          @if (mensajes[partido._id]) {
+            <p class="mensaje">{{ mensajes[partido._id] }}</p>
+          }
+
+        </div>
+      }
+    </div>
+  }
+
+</div>

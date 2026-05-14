@@ -18,18 +18,22 @@ export class LoginComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  onSubmit() {
-    this.cargando = true;
-    this.error = '';
+ onSubmit() {
+  this.cargando = true;
+  this.error = '';
 
-    this.authService.login(this.datos).subscribe({
-      next: () => {
+  this.authService.login(this.datos).subscribe({
+    next: (res) => {
+      if (res.usuario.rol === 'admin') {
+        this.router.navigate(['/admin']);
+      } else {
         this.router.navigate(['/partidos']);
-      },
-      error: (err) => {
-        this.error = err.error?.message || 'Error al iniciar sesión';
-        this.cargando = false;
       }
-    });
-  }
+    },
+    error: (err) => {
+      this.error = err.error?.message || 'Error al iniciar sesión';
+      this.cargando = false;
+    }
+  });
+}
 }
