@@ -99,3 +99,21 @@ header {
   font-weight: bold;
   padding: 0 1rem;
 }
+.prediccion-cerrada {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.puntos-ganados {
+  font-weight: bold;
+  color: #2a9d8f;
+}
+
+.puntos-cero {
+  font-weight: bold;
+  color: #e63946;
+}

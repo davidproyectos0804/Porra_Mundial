@@ -134,7 +134,10 @@ export class PartidosComponent implements OnInit {
   getBanderaUrl(codigo: string): string {
     return `https://flagcdn.com/w40/${codigo}.png`;
   }
-
+  getPuntosPartido(partidoId: string): number | null {
+  const prediccion = this.predicciones().find(p => p.partido === partidoId);
+  return prediccion ? prediccion.puntosObtenidos : null;
+}
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

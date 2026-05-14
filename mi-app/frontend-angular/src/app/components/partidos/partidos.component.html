@@ -4,6 +4,9 @@
   <header>
     <h1>⚽ Porra Mundial 2026</h1>
   <div class="usuario-info">
+    @if (usuario?.rol === 'admin') {
+      <a routerLink="/admin">⚙️ Admin</a>
+    }
     <span>{{ usuario?.nombre }}</span>
     <span>{{ usuario?.puntosTotales }} pts</span>
     <a routerLink="/ranking">🏆 Ranking</a>
@@ -81,7 +84,14 @@
           <!-- Predicción existente si jornada cerrada -->
           @if (jornandaCerrada() && inputsPrediccion[partido._id]) {
             <div class="prediccion-cerrada">
-              Tu predicción: {{ inputsPrediccion[partido._id].local }} - {{ inputsPrediccion[partido._id].visitante }}
+              <span>Tu predicción: {{ inputsPrediccion[partido._id].local }} - {{ inputsPrediccion[partido._id].visitante }}</span>
+              @if (getPuntosPartido(partido._id) !== null) {
+                <span [class.puntos-ganados]="getPuntosPartido(partido._id)! > 0"
+                      [class.puntos-cero]="getPuntosPartido(partido._id) === 0">
+                  {{ getPuntosPartido(partido._id) === 500 ? '🎯 500 pts' :
+                    getPuntosPartido(partido._id) === 200 ? '✅ 200 pts' : '❌ 0 pts' }}
+                  </span>
+              }
             </div>
           }
 
@@ -89,5 +99,4 @@
       }
     </div>
   }
-
 </div>

@@ -30,7 +30,7 @@ const guardarPrediccion = async (req, res) => {
     const prediccion = await Prediccion.findOneAndUpdate(
       { usuario: usuarioId, partido: partidoId },
       { golesLocalPredicho, golesVisitantePredicho },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     res.json({ message: 'Predicción guardada', prediccion });
