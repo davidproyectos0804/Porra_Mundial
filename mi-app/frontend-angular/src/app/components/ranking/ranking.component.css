@@ -1,0 +1,86 @@
+.ranking-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+}
+
+.usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.usuario-info button {
+  padding: 0.4rem 0.8rem;
+  background: #e63946;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.ranking-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ranking-fila {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.ranking-fila.yo {
+  background: #fff8e1;
+  border-color: #ffc107;
+  font-weight: bold;
+}
+
+.posicion {
+  width: 40px;
+  font-size: 1.2rem;
+}
+
+.nombre {
+  flex: 1;
+}
+
+.puntos {
+  font-weight: bold;
+  color: #e63946;
+}
+
+.cargando {
+  text-align: center;
+  color: #888;
+}
+
+.nav-links {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.nav-links a {
+  color: #e63946;
+  text-decoration: none;
+  font-weight: bold;
+}

@@ -3,11 +3,12 @@
   <!-- Header -->
   <header>
     <h1>⚽ Porra Mundial 2026</h1>
-    <div class="usuario-info">
-      <span>{{ usuario?.nombre }}</span>
-      <span>{{ usuario?.puntosTotales }} pts</span>
-      <button (click)="logout()">Salir</button>
-    </div>
+  <div class="usuario-info">
+    <span>{{ usuario?.nombre }}</span>
+    <span>{{ usuario?.puntosTotales }} pts</span>
+    <a routerLink="/ranking">🏆 Ranking</a>
+    <button (click)="logout()">Salir</button>
+  </div>
   </header>
 
   <!-- Navegación entre jornadas -->

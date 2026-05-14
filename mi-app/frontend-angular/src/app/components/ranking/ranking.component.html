@@ -1,0 +1,34 @@
+<div class="ranking-page">
+
+  <header>
+    <h1>⚽ Porra Mundial 2026</h1>
+    <div class="usuario-info">
+      <span>{{ usuario?.nombre }}</span>
+      <span>{{ usuario?.puntosTotales }} pts</span>
+      <button (click)="logout()">Salir</button>
+    </div>
+  </header>
+
+  <h2>🏆 Ranking</h2>
+
+  @if (cargando()) {
+    <p class="cargando">Cargando ranking...</p>
+  }
+
+  @if (!cargando()) {
+    <div class="ranking-lista">
+      @for (usuario of ranking(); track usuario._id; let i = $index) {
+        <div class="ranking-fila" [class.yo]="usuario._id === this.usuario?._id">
+          <span class="posicion">{{ getMedalla(i) }}</span>
+          <span class="nombre">{{ usuario.nombre }}</span>
+          <span class="puntos">{{ usuario.puntosTotales }} pts</span>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="nav-links">
+    <a routerLink="/partidos">← Volver a partidos</a>
+  </div>
+
+</div>

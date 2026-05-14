@@ -1,14 +1,14 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PartidoService } from '../../services/partido.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-partidos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './partidos.component.html',
   styleUrl: './partidos.component.css'
 })
