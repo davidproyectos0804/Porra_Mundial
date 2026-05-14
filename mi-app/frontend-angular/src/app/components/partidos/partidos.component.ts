@@ -9,8 +9,7 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-partidos',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './partidos.component.html',
-  styleUrl: './partidos.component.css'
+  templateUrl: './partidos.component.html'
 })
 export class PartidosComponent implements OnInit {
 

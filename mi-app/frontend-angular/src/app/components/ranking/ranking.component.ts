@@ -9,8 +9,7 @@ import { environment } from '../../../environments/environment';
   selector: 'app-ranking',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './ranking.component.html',
-  styleUrl: './ranking.component.css'
+  templateUrl: './ranking.component.html'
 })
 export class RankingComponent implements OnInit {
 

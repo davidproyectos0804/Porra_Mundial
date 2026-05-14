@@ -9,7 +9,6 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './registro.component.html',
-  styleUrl: './registro.component.css'
 })
 export class RegistroComponent {
   datos = { nombre: '', email: '', password: '', confirmarPassword: '' };

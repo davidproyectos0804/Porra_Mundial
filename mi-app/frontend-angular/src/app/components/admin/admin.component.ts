@@ -10,8 +10,7 @@ import { environment } from '../../../environments/environment';
   selector: 'app-admin',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './admin.component.html',
-  styleUrl: './admin.component.css'
+  templateUrl: './admin.component.html'
 })
 export class AdminComponent implements OnInit {
 
@@ -110,7 +109,7 @@ export class AdminComponent implements OnInit {
   }
 
   getBanderaUrl(codigo: string): string {
-    return `https://flagcdn.com/w40/${codigo}.png`;
+    return `https://flagcdn.com/w320/${codigo}.png`;
   }
 
   logout(): void {
