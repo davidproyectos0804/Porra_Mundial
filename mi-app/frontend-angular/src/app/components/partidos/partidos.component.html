@@ -17,6 +17,11 @@
     <button (click)="jornadaSiguiente()" [disabled]="faseIndex() === fases().length - 1">→</button>
   </div>
 
+  <!-- Aviso jornada cerrada -->
+  @if (jornandaCerrada()) {
+    <p class="aviso-cerrado">🔒 El plazo para predecir esta jornada ha cerrado</p>
+  }
+
   <!-- Cargando -->
   @if (cargando()) {
     <p class="cargando">Cargando partidos...</p>
@@ -28,11 +33,13 @@
       @for (partido of partidos(); track partido._id) {
         <div class="partido-card">
           <span class="fecha">{{ partido.fechaHora | date:'dd/MM HH:mm' }}</span>
+
           <div class="equipos">
             <div class="equipo">
               <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" />
               <span>{{ partido.equipoLocal.nombre }}</span>
             </div>
+
             <div class="marcador">
               @if (partido.finalizado) {
                 <span>{{ partido.golesLocal }} - {{ partido.golesVisitante }}</span>
@@ -40,11 +47,43 @@
                 <span>vs</span>
               }
             </div>
+
             <div class="equipo visitante">
               <span>{{ partido.equipoVisitante.nombre }}</span>
               <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" />
             </div>
           </div>
+
+          <!-- Predicción -->
+          @if (!partido.finalizado && !jornandaCerrada()) {
+            <div class="prediccion">
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="getInputPrediccion(partido._id).local"
+                class="input-goles"
+              />
+              <span>-</span>
+              <input
+                type="number"
+                min="0"
+                [(ngModel)]="getInputPrediccion(partido._id).visitante"
+                class="input-goles"
+              />
+              <button (click)="guardarPrediccion(partido._id)">Guardar</button>
+              @if (mensajes[partido._id]) {
+                <span class="mensaje">{{ mensajes[partido._id] }}</span>
+              }
+            </div>
+          }
+
+          <!-- Predicción existente si jornada cerrada -->
+          @if (jornandaCerrada() && inputsPrediccion[partido._id]) {
+            <div class="prediccion-cerrada">
+              Tu predicción: {{ inputsPrediccion[partido._id].local }} - {{ inputsPrediccion[partido._id].visitante }}
+            </div>
+          }
+
         </div>
       }
     </div>

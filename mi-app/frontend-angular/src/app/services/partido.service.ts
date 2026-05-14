@@ -30,4 +30,19 @@ export class PartidoService {
       headers: this.getHeaders()
     });
   }
+  // Guardar predicción
+guardarPrediccion(partidoId: string, golesLocal: number, golesVisitante: number): Observable<any> {
+  return this.http.post(`${environment.apiUrl}/predicciones`, {
+    partidoId,
+    golesLocalPredicho: golesLocal,
+    golesVisitantePredicho: golesVisitante
+  }, { headers: this.getHeaders() });
+}
+
+// Obtener mis predicciones de una fase
+getMisPredicciones(faseId: string): Observable<any[]> {
+  return this.http.get<any[]>(`${environment.apiUrl}/predicciones/fase/${faseId}`, {
+    headers: this.getHeaders()
+  });
+}
 }

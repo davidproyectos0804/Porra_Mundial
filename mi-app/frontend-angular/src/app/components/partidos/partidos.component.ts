@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PartidoService } from '../../services/partido.service';
 import { AuthService } from '../../services/auth.service';
@@ -7,7 +8,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-partidos',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './partidos.component.html',
   styleUrl: './partidos.component.css'
 })
@@ -15,10 +16,15 @@ export class PartidosComponent implements OnInit {
 
   fases = signal<any[]>([]);
   partidos = signal<any[]>([]);
+  predicciones = signal<any[]>([]);
   faseActual = signal<any>(null);
   faseIndex = signal<number>(0);
   cargando = signal<boolean>(true);
   usuario: any;
+
+  // Guardamos los inputs de predicción por partidoId
+  inputsPrediccion: { [partidoId: string]: { local: number, visitante: number } } = {};
+  mensajes: { [partidoId: string]: string } = {};
 
   constructor(
     private partidoService: PartidoService,
@@ -34,24 +40,43 @@ export class PartidosComponent implements OnInit {
   cargarFases(): void {
     this.partidoService.getFases().subscribe({
       next: (fases) => {
-        // Solo fases de grupos por ahora
         const fasesGrupos = fases.filter(f => f.nombre.includes('Fase de Grupos'));
         this.fases.set(fasesGrupos);
         if (fasesGrupos.length > 0) {
           this.faseActual.set(fasesGrupos[0]);
-          this.cargarPartidos(fasesGrupos[0]._id);
+          this.cargarPartidosYPredicciones(fasesGrupos[0]._id);
         }
       },
       error: () => this.router.navigate(['/login'])
     });
   }
 
-  cargarPartidos(faseId: string): void {
+  cargarPartidosYPredicciones(faseId: string): void {
     this.cargando.set(true);
+    this.inputsPrediccion = {};
+    this.mensajes = {};
+
     this.partidoService.getPartidosPorFase(faseId).subscribe({
       next: (partidos) => {
         this.partidos.set(partidos);
-        this.cargando.set(false);
+
+        // Cargar predicciones existentes
+        this.partidoService.getMisPredicciones(faseId).subscribe({
+          next: (predicciones) => {
+            this.predicciones.set(predicciones);
+
+            // Rellenar inputs con predicciones existentes
+            predicciones.forEach(p => {
+              this.inputsPrediccion[p.partido] = {
+                local: p.golesLocalPredicho,
+                visitante: p.golesVisitantePredicho
+              };
+            });
+
+            this.cargando.set(false);
+          },
+          error: () => this.cargando.set(false)
+        });
       },
       error: () => this.cargando.set(false)
     });
@@ -63,7 +88,7 @@ export class PartidosComponent implements OnInit {
       const nuevoIndex = index - 1;
       this.faseIndex.set(nuevoIndex);
       this.faseActual.set(this.fases()[nuevoIndex]);
-      this.cargarPartidos(this.fases()[nuevoIndex]._id);
+      this.cargarPartidosYPredicciones(this.fases()[nuevoIndex]._id);
     }
   }
 
@@ -73,29 +98,45 @@ export class PartidosComponent implements OnInit {
       const nuevoIndex = index + 1;
       this.faseIndex.set(nuevoIndex);
       this.faseActual.set(this.fases()[nuevoIndex]);
-      this.cargarPartidos(this.fases()[nuevoIndex]._id);
+      this.cargarPartidosYPredicciones(this.fases()[nuevoIndex]._id);
     }
   }
 
-  // Agrupar partidos por grupo
-  getGrupos(): string[] {
-    const grupos = new Set<string>();
-    this.partidos().forEach(p => {
-      if (p.equipoLocal?.grupo) grupos.add(p.equipoLocal.grupo);
-    });
-    return Array.from(grupos);
+  getInputPrediccion(partidoId: string): { local: number, visitante: number } {
+    if (!this.inputsPrediccion[partidoId]) {
+      this.inputsPrediccion[partidoId] = { local: 0, visitante: 0 };
+    }
+    return this.inputsPrediccion[partidoId];
   }
 
-  getPartidosPorGrupo(grupoId: string): any[] {
-    return this.partidos().filter(p => p.equipoLocal?.grupo === grupoId);
+  guardarPrediccion(partidoId: string): void {
+    const input = this.inputsPrediccion[partidoId];
+    if (input === undefined) return;
+
+    this.partidoService.guardarPrediccion(partidoId, input.local, input.visitante).subscribe({
+      next: () => {
+        this.mensajes[partidoId] = '✅ Guardado';
+        setTimeout(() => this.mensajes[partidoId] = '', 2000);
+      },
+      error: (err) => {
+        this.mensajes[partidoId] = '❌ ' + (err.error?.message || 'Error');
+        setTimeout(() => this.mensajes[partidoId] = '', 3000);
+      }
+    });
+  }
+
+  jornandaCerrada(): boolean {
+    const fase = this.faseActual();
+    if (!fase) return false;
+    return new Date() > new Date(fase.fechaLimite);
+  }
+
+  getBanderaUrl(codigo: string): string {
+    return `https://flagcdn.com/w40/${codigo}.png`;
   }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
-  }
-
-  getBanderaUrl(codigo: string): string {
-    return `https://flagcdn.com/w40/${codigo}.png`;
   }
 }
