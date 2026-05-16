@@ -24,7 +24,6 @@ export class PartidosComponent implements OnInit {
   // Guardamos los inputs de predicción por partidoId
   inputsPrediccion: { [partidoId: string]: { local: number, visitante: number } } = {};
   mensajes: { [partidoId: string]: string } = {};
-
   constructor(
     private partidoService: PartidoService,
     private authService: AuthService,
@@ -111,6 +110,13 @@ export class PartidosComponent implements OnInit {
   guardarPrediccion(partidoId: string): void {
     const input = this.inputsPrediccion[partidoId];
     if (input === undefined) return;
+
+    // Validación
+    if (input.local < 0 || input.visitante < 0) {
+      this.mensajes[partidoId] = '❌ Los goles no pueden ser negativos';
+      setTimeout(() => this.mensajes[partidoId] = '', 3000);
+      return;
+    }
 
     this.partidoService.guardarPrediccion(partidoId, input.local, input.visitante).subscribe({
       next: () => {

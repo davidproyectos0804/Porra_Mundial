@@ -13,10 +13,8 @@ export class AuthService {
 
   // Registro de usuario
   register(datos: { nombre: string, email: string, password: string }): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/auth/register`, datos).pipe(
-      tap((res: any) => this.guardarSesion(res))
-    );
-  }
+  return this.http.post(`${environment.apiUrl}/auth/register`, datos);
+}
 
   // Login de usuario
   login(datos: { email: string, password: string }): Observable<any> {
@@ -44,9 +42,9 @@ export class AuthService {
 
   // Obtener usuario actual
   getUsuario(): any {
-    const usuario = localStorage.getItem('usuario');
-    return usuario ? JSON.parse(usuario) : null;
-  }
+  const usuario = localStorage.getItem('usuario');
+  return usuario && usuario !== 'undefined' ? JSON.parse(usuario) : null;
+}
 
   // Comprobar si está logueado
   isLoggedIn(): boolean {

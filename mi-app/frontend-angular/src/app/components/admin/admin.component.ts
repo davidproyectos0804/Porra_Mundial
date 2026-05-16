@@ -84,6 +84,18 @@ export class AdminComponent implements OnInit {
   meterResultado(partidoId: string): void {
     const input = this.inputsResultado[partidoId];
 
+    // Validación
+    if (input.local < 0 || input.visitante < 0) {
+      this.mensajes[partidoId] = '❌ Los goles no pueden ser negativos';
+      setTimeout(() => this.mensajes[partidoId] = '', 3000);
+      return;
+    }
+
+    if (input.local === null || input.visitante === null) {
+      this.mensajes[partidoId] = '❌ Introduce el resultado completo';
+      setTimeout(() => this.mensajes[partidoId] = '', 3000);
+      return;
+    }
     this.http.put(`${environment.apiUrl}/admin/partidos/${partidoId}/resultado`, {
       golesLocal: input.local,
       golesVisitante: input.visitante

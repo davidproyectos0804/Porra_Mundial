@@ -23,6 +23,14 @@ const usuarioSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  verificado: {
+    type: Boolean,
+    default: false // Por defecto no verificado
+  },
+  tokenVerificacion: {
+    type: String,
+    default: null // Token que se envía por email
+  },
   fechaRegistro: {
     type: Date,
     default: Date.now

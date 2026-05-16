@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -15,24 +15,45 @@ export class LoginComponent {
   error = '';
   cargando = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
- onSubmit() {
-  this.cargando = true;
-  this.error = '';
-
-  this.authService.login(this.datos).subscribe({
-    next: (res) => {
-      if (res.usuario.rol === 'admin') {
-        this.router.navigate(['/admin']);
-      } else {
-        this.router.navigate(['/partidos']);
-      }
-    },
-    error: (err) => {
-      this.error = err.error?.message || 'Error al iniciar sesión';
-      this.cargando = false;
+  onSubmit() {
+    if (!this.datos.email.trim()) {
+      this.error = 'El email es obligatorio';
+      return;
     }
-  });
-}
+
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.datos.email);
+    if (!emailValido) {
+      this.error = 'El email no es válido';
+      return;
+    }
+
+    if (!this.datos.password) {
+      this.error = 'La contraseña es obligatoria';
+      return;
+    }
+
+    this.cargando = true;
+    this.error = '';
+
+    this.authService.login(this.datos).subscribe({
+      next: (res) => {
+        if (res.usuario.rol === 'admin') {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/partidos']);
+        }
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Error al iniciar sesión';
+        this.cargando = false;
+        this.cdr.detectChanges(); // ← fuerza la actualización
+      }
+    });
+  }
 }
