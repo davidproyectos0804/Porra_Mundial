@@ -1,44 +1,48 @@
 <div class="min-h-screen bg-[#0a1628]">
 
   <!-- Header -->
-  <header class="border-b border-white/5 sticky top-0 z-50 backdrop-blur-xl bg-[#0a1628]/95">
+  <header class="border-b border-white/5 sticky top-0 z-50 backdrop-blur-xl bg-[#0a1628]/80">
     
-    <!-- Línea de acento superior -->
-    <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#e63946] via-[#ffd700] to-[#e63946]"></div>
+    <!-- Línea de acento superior (mejorada) -->
+    <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#e63946] via-[#ffd700] to-[#e63946]"></div>
 
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
 
-      <!-- Logo -->
+      <!-- Logo (mejorado con hover efecto) -->
       <a routerLink="/partidos" class="flex items-center gap-2 group flex-1">
-        <span class="text-3xl group-hover:scale-110 transition-transform duration-300">⚽</span>
+        <div class="relative">
+          <span class="text-3xl block transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
+            <img src="logo.png" alt="Logo" class="w-12 h-12">
+          </span>
+        </div>
         <div class="flex flex-col">
           <span class="text-white font-black text-lg uppercase tracking-[0.2em] leading-none group-hover:text-[#e63946] transition-colors duration-300">Porra Mundial</span>
           <span class="text-[#ffd700] font-bold text-[10px] tracking-[0.3em] uppercase">FIFA World Cup 2026</span>
         </div>
       </a>
 
-    
-        <nav class="flex items-center">
+      <!-- Navegación (mejorada: líneas centradas y más elegantes) -->
+      <nav class="flex items-center">
         <a routerLink="/partidos" routerLinkActive="active-link"
-            class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
-            PARTIDOS
-            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e63946] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
+           class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
+           PARTIDOS
+           <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#e63946] group-hover:w-full transition-all duration-300 origin-center rounded-full"></span>
         </a>
         <a routerLink="/ranking" routerLinkActive="active-link"
-            class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
-            RANKING
-            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#ffd700] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
+           class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
+           RANKING
+           <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#ffd700] group-hover:w-full transition-all duration-300 origin-center rounded-full"></span>
         </a>
         @if (usuario?.rol === 'admin') {
-            <a routerLink="/admin" routerLinkActive="active-link"
-            class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
-            ADMIN
-            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
-            </a>
+          <a routerLink="/admin" routerLinkActive="active-link"
+             class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
+             ADMIN
+             <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 origin-center rounded-full"></span>
+          </a>
         }
-        </nav>
+      </nav>
 
-      <!-- Usuario + Salir -->
+      <!-- Usuario + Salir (EXACTAMENTE COMO ESTABA - sin cambios) -->
       <div class="flex items-center gap-5 flex-1 justify-end">
         <div class="flex flex-col items-end">
           <span class="text-white text-sm font-bold leading-none">{{ usuario?.nombre }}</span>

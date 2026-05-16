@@ -16,10 +16,10 @@ const enviarEmailVerificacion = async (email, nombre, token) => {
   await transporter.sendMail({
     from: `"Porra Mundial 2026" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: '⚽ Verifica tu cuenta - Porra Mundial 2026',
+    subject: '<img src="logo.png" alt="Logo" class="w-24 h-24 mx-auto"> Verifica tu cuenta - Porra Mundial 2026',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; background: #0a1628; color: white; padding: 30px; border-radius: 12px;">
-        <h1 style="color: #ffd700; text-align: center;">⚽ Porra Mundial 2026</h1>
+        <h1 style="color: #ffd700; text-align: center;"><img src="logo.png" alt="Logo" class="w-24 h-24 mx-auto"> Porra Mundial 2026</h1>
         <p>Hola <strong>${nombre}</strong>,</p>
         <p>Gracias por registrarte. Haz clic en el botón para verificar tu cuenta:</p>
         <div style="text-align: center; margin: 30px 0;">
