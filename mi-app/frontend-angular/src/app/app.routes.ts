@@ -8,7 +8,15 @@ export const routes: Routes = [
   { path: 'registro', loadComponent: () => import('./components/registro/registro.component').then(m => m.RegistroComponent) },
   { path: 'verificar', loadComponent: () => import('./components/verificar/verificar.component').then(m => m.VerificarComponent) },
   { path: 'verificar-email', loadComponent: () => import('./components/verificar-email/verificar-email.component').then(m => m.VerificarEmailComponent) },
-  { path: 'partidos', loadComponent: () => import('./components/partidos/partidos.component').then(m => m.PartidosComponent), canActivate: [authGuard] },
-  { path: 'ranking', loadComponent: () => import('./components/ranking/ranking.component').then(m => m.RankingComponent), canActivate: [authGuard] },
-  { path: 'admin', loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent), canActivate: [authGuard, adminGuard] },
+  {
+    path: '',
+    loadComponent: () => import('./components/layout/layout.component').then(m => m.LayoutComponent),
+    canActivate: [authGuard],
+    children: [
+      { path: 'partidos', loadComponent: () => import('./components/partidos/partidos.component').then(m => m.PartidosComponent) },
+      { path: 'ranking', loadComponent: () => import('./components/ranking/ranking.component').then(m => m.RankingComponent) },
+      { path: 'admin', loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent), canActivate: [adminGuard] },
+    ]
+  },
+  { path: '**', loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent) },
 ];

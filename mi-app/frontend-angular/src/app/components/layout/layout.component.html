@@ -1,0 +1,61 @@
+<div class="min-h-screen bg-[#0a1628]">
+
+  <!-- Header -->
+  <header class="border-b border-white/5 sticky top-0 z-50 backdrop-blur-xl bg-[#0a1628]/95">
+    
+    <!-- Línea de acento superior -->
+    <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#e63946] via-[#ffd700] to-[#e63946]"></div>
+
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+
+      <!-- Logo -->
+      <a routerLink="/partidos" class="flex items-center gap-2 group flex-1">
+        <span class="text-3xl group-hover:scale-110 transition-transform duration-300">⚽</span>
+        <div class="flex flex-col">
+          <span class="text-white font-black text-lg uppercase tracking-[0.2em] leading-none group-hover:text-[#e63946] transition-colors duration-300">Porra Mundial</span>
+          <span class="text-[#ffd700] font-bold text-[10px] tracking-[0.3em] uppercase">FIFA World Cup 2026</span>
+        </div>
+      </a>
+
+    
+        <nav class="flex items-center">
+        <a routerLink="/partidos" routerLinkActive="active-link"
+            class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
+            PARTIDOS
+            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e63946] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
+        </a>
+        <a routerLink="/ranking" routerLinkActive="active-link"
+            class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
+            RANKING
+            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#ffd700] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
+        </a>
+        @if (usuario?.rol === 'admin') {
+            <a routerLink="/admin" routerLinkActive="active-link"
+            class="relative px-6 py-5 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
+            ADMIN
+            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
+            </a>
+        }
+        </nav>
+
+      <!-- Usuario + Salir -->
+      <div class="flex items-center gap-5 flex-1 justify-end">
+        <div class="flex flex-col items-end">
+          <span class="text-white text-sm font-bold leading-none">{{ usuario?.nombre }}</span>
+          <span class="text-[#ffd700] text-xs font-black mt-1 tracking-wider">{{ usuario?.puntosTotales }} PTS</span>
+        </div>
+        <div class="w-px h-8 bg-white/10"></div>
+        <button (click)="logout()"
+          class="group flex items-center gap-2 text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest transition-all duration-200">
+          <span>Salir</span>
+          <span class="text-base group-hover:translate-x-1 transition-transform duration-200">→</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Contenido -->
+  <router-outlet />
+
+</div>
