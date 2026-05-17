@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router} from '@angular/router';
@@ -27,7 +27,8 @@ export class PartidosComponent implements OnInit {
   constructor(
     private partidoService: PartidoService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -57,7 +58,9 @@ export class PartidosComponent implements OnInit {
     this.partidoService.getPartidosPorFase(faseId).subscribe({
       next: (partidos) => {
         this.partidos.set(partidos);
-
+        partidos.forEach(p => {
+          this.inputsPrediccion[p._id] = { local: 0, visitante: 0 };
+        });
         // Cargar predicciones existentes
         this.partidoService.getMisPredicciones(faseId).subscribe({
           next: (predicciones) => {
@@ -100,35 +103,49 @@ export class PartidosComponent implements OnInit {
     }
   }
 
-  getInputPrediccion(partidoId: string): { local: number, visitante: number } {
-    if (!this.inputsPrediccion[partidoId]) {
-      this.inputsPrediccion[partidoId] = { local: 0, visitante: 0 };
-    }
-    return this.inputsPrediccion[partidoId];
-  }
 
   guardarPrediccion(partidoId: string): void {
-    const input = this.inputsPrediccion[partidoId];
-    if (input === undefined) return;
+  const input = this.inputsPrediccion[partidoId];
+  if (input === undefined) return;
 
-    // Validación
-    if (input.local < 0 || input.visitante < 0) {
-      this.mensajes[partidoId] = '❌ Los goles no pueden ser negativos';
-      setTimeout(() => this.mensajes[partidoId] = '', 3000);
-      return;
-    }
+  // Validar que son números enteros positivos
+  const local = Number(input.local);
+  const visitante = Number(input.visitante);
 
-    this.partidoService.guardarPrediccion(partidoId, input.local, input.visitante).subscribe({
-      next: () => {
-        this.mensajes[partidoId] = '✅ Guardado';
-        setTimeout(() => this.mensajes[partidoId] = '', 2000);
-      },
-      error: (err) => {
-        this.mensajes[partidoId] = '❌ ' + (err.error?.message || 'Error');
-        setTimeout(() => this.mensajes[partidoId] = '', 3000);
-      }
-    });
+  if (isNaN(local) || isNaN(visitante)) {
+    this.mensajes[partidoId] = '❌ Solo se permiten números';
+    this.cdr.detectChanges();
+    setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
+    return;
   }
+
+  if (local < 0 || visitante < 0) {
+    this.mensajes[partidoId] = '❌ Los goles no pueden ser negativos';
+    this.cdr.detectChanges();
+    setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
+    return;
+  }
+
+  if (!Number.isInteger(local) || !Number.isInteger(visitante)) {
+    this.mensajes[partidoId] = '❌ Solo se permiten números enteros';
+    this.cdr.detectChanges();
+    setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
+    return;
+  }
+
+  this.partidoService.guardarPrediccion(partidoId, local, visitante).subscribe({
+    next: () => {
+      this.mensajes[partidoId] = '✅ Guardado';
+      this.cdr.detectChanges();
+      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 2000);
+    },
+    error: (err) => {
+      this.mensajes[partidoId] = '❌ ' + (err.error?.message || 'Error');
+      this.cdr.detectChanges();
+      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
+    }
+  });
+}
 
   jornandaCerrada(): boolean {
     const fase = this.faseActual();
@@ -142,6 +159,9 @@ export class PartidosComponent implements OnInit {
   getPuntosPartido(partidoId: string): number | null {
   const prediccion = this.predicciones().find(p => p.partido === partidoId);
   return prediccion ? prediccion.puntosObtenidos : null;
+}
+yaPredicho(partidoId: string): boolean {
+  return this.predicciones().some(p => p.partido === partidoId);
 }
   logout(): void {
     this.authService.logout();

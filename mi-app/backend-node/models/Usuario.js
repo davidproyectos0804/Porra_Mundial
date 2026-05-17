@@ -31,6 +31,10 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     default: null // Token que se envía por email
   },
+  fotoPerfil: {
+    type: String,
+    default: null
+  },
   fechaRegistro: {
     type: Date,
     default: Date.now

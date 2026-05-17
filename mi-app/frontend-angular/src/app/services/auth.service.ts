@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -56,4 +56,24 @@ export class AuthService {
     const usuario = this.getUsuario();
     return usuario?.rol === 'admin';
   }
+  // Subir foto de perfil
+subirFoto(file: File): Observable<any> {
+  const formData = new FormData();
+  formData.append('foto', file);
+
+  return this.http.post(`${environment.apiUrl}/usuario/foto`, formData, {
+    headers: new HttpHeaders({
+      'Authorization': `Bearer ${this.getToken()}`
+    })
+  }).pipe(
+    tap((res: any) => {
+      // Actualizar el usuario en localStorage con la nueva foto
+      const usuario = this.getUsuario();
+      if (usuario) {
+        usuario.fotoPerfil = res.fotoPerfil;
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+      }
+    })
+  );
+}
 }

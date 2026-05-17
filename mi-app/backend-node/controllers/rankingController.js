@@ -3,8 +3,8 @@ const Usuario = require('../models/Usuario');
 const getRanking = async (req, res) => {
   try {
     const usuarios = await Usuario.find()
-      .select('nombre puntosTotales') // Solo estos campos
-      .sort({ puntosTotales: -1 }); // De más a menos puntos
+      .select('nombre puntosTotales fotoPerfil')
+      .sort({ puntosTotales: -1 });
 
     res.json(usuarios);
 

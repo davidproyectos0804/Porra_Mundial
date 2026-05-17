@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-ranking',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './ranking.component.html'
 })
 export class RankingComponent implements OnInit {
@@ -16,6 +16,7 @@ export class RankingComponent implements OnInit {
   ranking = signal<any[]>([]);
   cargando = signal<boolean>(true);
   usuario: any;
+  miPosicion = signal<any>(null);
 
   constructor(
     private http: HttpClient,
@@ -36,21 +37,17 @@ export class RankingComponent implements OnInit {
     this.http.get<any[]>(`${environment.apiUrl}/ranking`, { headers }).subscribe({
       next: (data) => {
         this.ranking.set(data);
+        const index = data.findIndex(u => u._id === this.usuario?.id);
+        if (index >= 0) {
+          this.miPosicion.set({ ...data[index], posicion: index + 1 });
+        }
         this.cargando.set(false);
       },
       error: () => this.router.navigate(['/login'])
     });
   }
 
-  getMedalla(index: number): string {
-    if (index === 0) return '🥇';
-    if (index === 1) return '🥈';
-    if (index === 2) return '🥉';
-    return `${index + 1}.`;
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  getFotoPerfil(usuario: any): string | null {
+    return usuario?.fotoPerfil || null;
   }
 }

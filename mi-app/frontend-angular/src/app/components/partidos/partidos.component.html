@@ -38,9 +38,24 @@
           <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition">
 
             <!-- Fecha -->
-            <span class="text-gray-500 text-xs font-medium uppercase tracking-wider">
-              {{ partido.fechaHora | date:'dd/MM HH:mm' }}
-            </span>
+            <div class="flex items-center justify-between">
+  <span class="text-gray-500 text-xs font-medium uppercase tracking-wider">
+    {{ partido.fechaHora | date:'dd/MM HH:mm' }}
+  </span>
+  @if (!partido.finalizado && !jornandaCerrada()) {
+    @if (yaPredicho(partido._id)) {
+      <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+        <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+        PREDICHO
+      </span>
+    } @else {
+      <span class="text-xs font-bold text-[#e63946] flex items-center gap-1 animate-pulse">
+        <span class="w-2 h-2 bg-[#e63946] rounded-full"></span>
+        SIN PREDECIR
+      </span>
+    }
+  }
+</div>
 
             <!-- Equipos -->
             <div class="flex items-center justify-between mt-3">
@@ -67,19 +82,17 @@
             @if (!partido.finalizado && !jornandaCerrada()) {
               <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
                 <span class="text-gray-400 text-sm">Tu predicción:</span>
-                <input
-                  type="number"
-                  min="0"
-                  [(ngModel)]="getInputPrediccion(partido._id).local"
-                  class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
-                />
-                <span class="text-gray-400 font-bold">-</span>
-                <input
-                  type="number"
-                  min="0"
-                  [(ngModel)]="getInputPrediccion(partido._id).visitante"
-                  class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
-                />
+               <input
+                type="text"
+                [(ngModel)]="inputsPrediccion[partido._id].local"
+                class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
+              />
+              <span class="text-gray-400 font-bold">-</span>
+              <input
+                type="text"
+                [(ngModel)]="inputsPrediccion[partido._id].visitante"
+                class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
+              />
                 <button
                   (click)="guardarPrediccion(partido._id)"
                   class="bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-4 py-2 rounded-lg text-sm transition">

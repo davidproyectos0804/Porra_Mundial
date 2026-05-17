@@ -1,53 +1,117 @@
+<div class="max-w-3xl mx-auto px-4 py-6 pb-24">
 
-  <div class="max-w-2xl mx-auto px-4 py-8">
-
-    <!-- Título -->
-    <div class="text-center mb-8">
-      <h2 class="text-4xl font-black text-white uppercase tracking-wider">🏆 Ranking</h2>
-    </div>
-
-    @if (cargando()) {
-      <p class="text-gray-400 text-center py-12">Cargando ranking...</p>
-    }
-
-    @if (!cargando()) {
-      <div class="flex flex-col gap-3">
-        @for (usuario of ranking(); track usuario._id; let i = $index) {
-          <div [class]="usuario._id === this.usuario?._id
-            ? 'bg-[#ffd700]/10 border border-[#ffd700]/40 rounded-2xl px-6 py-4 flex items-center gap-4'
-            : 'bg-white/5 border border-white/10 rounded-2xl px-6 py-4 flex items-center gap-4 hover:border-white/20 transition'">
-
-            <!-- Posición -->
-            <span class="text-2xl w-10 text-center">{{ getMedalla(i) }}</span>
-
-            <!-- Nombre -->
-            <span [class]="usuario._id === this.usuario?._id
-              ? 'flex-1 text-[#ffd700] font-black text-lg'
-              : 'flex-1 text-white font-bold text-lg'">
-              {{ usuario.nombre }}
-              @if (usuario._id === this.usuario?._id) {
-                <span class="text-xs font-medium text-[#ffd700]/70 ml-2">(tú)</span>
-              }
-            </span>
-
-            <!-- Puntos -->
-            <span [class]="usuario._id === this.usuario?._id
-              ? 'text-[#ffd700] font-black text-xl'
-              : 'text-white font-black text-xl'">
-              {{ usuario.puntosTotales }}
-              <span class="text-sm font-medium text-gray-400 ml-1">pts</span>
-            </span>
-
-          </div>
-        }
-      </div>
-    }
-
-    <!-- Volver -->
-    <div class="text-center mt-8">
-      <a routerLink="/partidos" class="text-gray-400 hover:text-white text-sm transition">
-        ← Volver a partidos
-      </a>
-    </div>
-
+  <!-- Título -->
+  <div class="text-center mb-8">
+    <p class="text-gray-500 text-xs font-bold uppercase tracking-[0.4em] mb-3">Tabla de clasificación</p>
+    <h2 class="text-5xl font-black text-white uppercase tracking-[0.2em]">RANKING</h2>
+    <div class="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#e63946] to-transparent mx-auto mt-4"></div>
   </div>
+
+  @if (cargando()) {
+    <p class="text-gray-400 text-center py-12">Cargando ranking...</p>
+  }
+
+  @if (!cargando()) {
+
+    <!-- Tabla -->
+    <div class="rounded-2xl overflow-hidden border border-white/10">
+
+      <!-- Cabecera -->
+      <div class="bg-white/5 grid grid-cols-12 px-6 py-3 border-b border-white/10">
+        <span class="col-span-1 text-gray-500 text-xs font-black uppercase tracking-widest text-center">#</span>
+        <span class="col-span-8 text-gray-500 text-xs font-black uppercase tracking-widest pl-4">Jugador</span>
+        <span class="col-span-3 text-gray-500 text-xs font-black uppercase tracking-widest text-right">Puntos</span>
+      </div>
+
+      <!-- Filas -->
+      @for (u of ranking().slice(0, 20); track u._id; let i = $index) {
+        <div [class]="u._id === this.usuario?.id
+          ? 'grid grid-cols-12 px-6 py-4 border-b border-white/5 bg-white/8 border-l-2 border-l-white'
+          : i % 2 === 0
+          ? 'grid grid-cols-12 px-6 py-4 border-b border-white/5 bg-white/2 hover:bg-white/5 transition-colors duration-150'
+          : 'grid grid-cols-12 px-6 py-4 border-b border-white/5 hover:bg-white/5 transition-colors duration-150'">
+
+          <!-- Posición -->
+          <div class="col-span-1 flex items-center justify-center">
+            @if (i === 0) {
+              <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <span class="text-[#0a1628] font-black text-sm">1</span>
+              </div>
+            } @else if (i === 1) {
+              <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
+                <span class="text-[#0a1628] font-black text-sm">2</span>
+              </div>
+            } @else if (i === 2) {
+              <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                <span class="text-white font-black text-sm">3</span>
+              </div>
+            } @else {
+              <span class="text-gray-600 font-bold text-sm">{{ i + 1 }}</span>
+            }
+          </div>
+
+          <!-- Nombre con foto -->
+          <div class="col-span-8 flex items-center gap-3 pl-4">
+            @if (u.fotoPerfil) {
+              <img [src]="u.fotoPerfil" class="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-white/20" />
+            } @else {
+              <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                <span class="text-white font-black text-xs">{{ u.nombre.charAt(0).toUpperCase() }}</span>
+              </div>
+            }
+            <span [class]="u._id === this.usuario?.id
+              ? 'text-white font-black text-base'
+              : i < 3 ? 'text-white font-bold text-base' : 'text-gray-300 font-medium text-base'">
+              {{ u.nombre }}
+            </span>
+            @if (u._id === this.usuario?.id) {
+              <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">tú</span>
+            }
+          </div>
+
+          <!-- Puntos -->
+          <div class="col-span-3 flex items-center justify-end">
+            <span [class]="i === 0 ? 'text-white font-black text-xl tabular-nums'
+              : i < 3 ? 'text-gray-200 font-black text-lg tabular-nums'
+              : 'text-gray-400 font-bold text-base tabular-nums'">
+              {{ u.puntosTotales }}
+            </span>
+            <span class="text-gray-600 text-xs font-medium ml-1">pts</span>
+          </div>
+
+        </div>
+      }
+
+    </div>
+
+  }
+
+</div>
+
+<!-- Mi posición fija en el pie -->
+@if (miPosicion() && miPosicion().posicion > 20) {
+  <div class="fixed bottom-0 left-0 right-0 bg-[#0a1628]/95 backdrop-blur-xl border-t border-white/10 z-40">
+    <div class="max-w-3xl mx-auto px-4 py-3">
+      <div class="grid grid-cols-12 items-center">
+        <div class="col-span-1 flex items-center justify-center">
+          <span class="text-white font-black text-lg">{{ miPosicion().posicion }}</span>
+        </div>
+        <div class="col-span-8 flex items-center gap-3 pl-4">
+          @if (miPosicion().fotoPerfil) {
+            <img [src]="miPosicion().fotoPerfil" class="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+          } @else {
+            <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+              <span class="text-white font-black text-xs">{{ miPosicion().nombre?.charAt(0).toUpperCase() }}</span>
+            </div>
+          }
+          <span class="text-white font-black text-base">{{ miPosicion().nombre }}</span>
+          <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">tú</span>
+        </div>
+        <div class="col-span-3 flex items-center justify-end">
+          <span class="text-white font-black text-xl tabular-nums">{{ miPosicion().puntosTotales }}</span>
+          <span class="text-gray-500 text-xs font-medium ml-1">pts</span>
+        </div>
+      </div>
+    </div>
+  </div>
+}
