@@ -49,5 +49,37 @@ const getMiPerfil = async (req, res) => {
     res.status(500).json({ message: 'Error obteniendo perfil', error: error.message });
   }
 };
+const cambiarNombre = async (req, res) => {
+  try {
+    const { nombre } = req.body;
 
-module.exports = { subirFotoPerfil, getMiPerfil };
+    if (!nombre || !nombre.trim()) {
+      return res.status(400).json({ message: 'El nombre no puede estar vacío' });
+    }
+
+    if (nombre.trim().length < 3) {
+      return res.status(400).json({ message: 'El nombre debe tener al menos 3 caracteres' });
+    }
+
+    if (nombre.trim().length > 20) {
+      return res.status(400).json({ message: 'El nombre no puede tener más de 20 caracteres' });
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(
+      req.usuario.id,
+      { nombre: nombre.trim() },
+      { new: true }
+    ).select('-password -tokenVerificacion');
+
+    // Actualizar en localStorage lo hará el frontend
+    res.json({
+      message: 'Nombre actualizado',
+      nombre: usuario.nombre
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error actualizando nombre', error: error.message });
+  }
+};
+
+module.exports = { subirFotoPerfil, getMiPerfil, cambiarNombre };

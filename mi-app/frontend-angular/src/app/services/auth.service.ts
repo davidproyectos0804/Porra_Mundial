@@ -76,4 +76,19 @@ subirFoto(file: File): Observable<any> {
     })
   );
 }
+cambiarNombre(nombre: string): Observable<any> {
+  return this.http.put(`${environment.apiUrl}/usuario/nombre`, { nombre }, {
+    headers: new HttpHeaders({
+      'Authorization': `Bearer ${this.getToken()}`
+    })
+  }).pipe(
+    tap((res: any) => {
+      const usuario = this.getUsuario();
+      if (usuario) {
+        usuario.nombre = res.nombre;
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+      }
+    })
+  );
+}
 }
