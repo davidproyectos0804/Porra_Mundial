@@ -6,22 +6,21 @@ const Equipo = require('../models/Equipo');
 
 // Calcular puntos de una predicción
 const calcularPuntos = (prediccion, golesLocalReal, golesVisitanteReal) => {
-  const { golesLocalPredicho, golesVisitantePredicho } = prediccion;
+  const golesLocalPredicho = Number(prediccion.golesLocalPredicho);
+  const golesVisitantePredicho = Number(prediccion.golesVisitantePredicho);
+  const localReal = Number(golesLocalReal);
+  const visitanteReal = Number(golesVisitanteReal);
 
-  // Resultado exacto
-  if (golesLocalPredicho === golesLocalReal && golesVisitantePredicho === golesVisitanteReal) {
+  if (golesLocalPredicho === localReal && golesVisitantePredicho === visitanteReal) {
     return 500;
   }
 
-  // Determinar ganador real
-  const ganadorReal = golesLocalReal > golesVisitanteReal ? 'local'
-    : golesLocalReal < golesVisitanteReal ? 'visitante' : 'empate';
+  const ganadorReal = localReal > visitanteReal ? 'local'
+    : localReal < visitanteReal ? 'visitante' : 'empate';
 
-  // Determinar ganador predicho
   const ganadorPredicho = golesLocalPredicho > golesVisitantePredicho ? 'local'
     : golesLocalPredicho < golesVisitantePredicho ? 'visitante' : 'empate';
 
-  // Acertó el ganador o empate
   if (ganadorReal === ganadorPredicho) {
     return 200;
   }
@@ -33,7 +32,9 @@ const calcularPuntos = (prediccion, golesLocalReal, golesVisitanteReal) => {
 const meterResultado = async (req, res) => {
   try {
     const { partidoId } = req.params;
-    const { golesLocal, golesVisitante } = req.body;
+    const golesLocal = Number(req.body.golesLocal);
+    const golesVisitante = Number(req.body.golesVisitante);
+    
 
     // Buscar el partido
     const partido = await Partido.findById(partidoId);

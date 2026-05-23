@@ -13,5 +13,4 @@ router.use('/predicciones', prediccionRoutes);
 router.use('/ranking', rankingRoutes);
 router.use('/admin', adminRoutes);
 router.use('/usuario', usuarioRoutes);
-
 module.exports = router;

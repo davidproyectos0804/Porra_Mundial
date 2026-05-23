@@ -1,88 +1,102 @@
- <div class="max-w-3xl mx-auto px-4 py-6">
+<div class="max-w-3xl mx-auto px-4 py-6">
 
-    <!-- Navegación entre jornadas -->
-    <div class="flex items-center justify-between mb-6">
-      <button
-        (click)="jornadadAnterior()"
-        [disabled]="faseIndex() === 0"
-        class="bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold px-5 py-3 rounded-xl border border-white/10 transition text-xl">
-        ←
-      </button>
-      <h2 class="text-white font-black text-xl uppercase tracking-wider text-center">
+  <!-- Navegación entre jornadas -->
+  <div class="flex items-center justify-between mb-6">
+    <button
+      (click)="jornadadAnterior()"
+      [disabled]="faseIndex() === 0"
+      class="bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold px-5 py-3 rounded-xl border border-white/10 transition text-xl">
+      ←
+    </button>
+    <div class="text-center">
+      <h2 class="text-white font-black text-xl uppercase tracking-wider">
         {{ faseActual()?.nombre }}
       </h2>
-      <button
-        (click)="jornadaSiguiente()"
-        [disabled]="faseIndex() === fases().length - 1"
-        class="bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold px-5 py-3 rounded-xl border border-white/10 transition text-xl">
-        →
-      </button>
+      <p class="text-xs mt-1">
+        @if (jornandaCerrada()) {
+          <span class="text-red-400 font-bold">🔒 Jornada cerrada</span>
+        } @else {
+          <span class="text-gray-500">Cierra el {{ faseActual()?.fechaLimite | date:'dd/MM HH:mm' }}</span>
+        }
+      </p>
     </div>
+    <button
+      (click)="jornadaSiguiente()"
+      [disabled]="faseIndex() === fases().length - 1"
+      class="bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold px-5 py-3 rounded-xl border border-white/10 transition text-xl">
+      →
+    </button>
+  </div>
 
-    <!-- Aviso jornada cerrada -->
-    @if (jornandaCerrada()) {
-      <div class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-sm font-medium px-4 py-3 rounded-xl mb-6 text-center">
-        🔒 El plazo para predecir esta jornada ha cerrado
-      </div>
-    }
-
-    <!-- Cargando -->
-    @if (cargando()) {
-      <p class="text-gray-400 text-center py-12">Cargando partidos...</p>
-    }
-
-    <!-- Partidos -->
-    @if (!cargando()) {
-      <div class="flex flex-col gap-3">
-        @for (partido of partidos(); track partido._id) {
-          <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition">
-
-            <!-- Fecha -->
-            <div class="flex items-center justify-between">
-  <span class="text-gray-500 text-xs font-medium uppercase tracking-wider">
-    {{ partido.fechaHora | date:'dd/MM HH:mm' }}
-  </span>
-  @if (!partido.finalizado && !jornandaCerrada()) {
-    @if (yaPredicho(partido._id)) {
-      <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
-        <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
-        PREDICHO
-      </span>
-    } @else {
-      <span class="text-xs font-bold text-[#e63946] flex items-center gap-1 animate-pulse">
-        <span class="w-2 h-2 bg-[#e63946] rounded-full"></span>
-        SIN PREDECIR
-      </span>
-    }
+  <!-- Cargando -->
+  @if (cargando()) {
+    <p class="text-gray-400 text-center py-12">Cargando partidos...</p>
   }
-</div>
 
-            <!-- Equipos -->
-            <div class="flex items-center justify-between mt-3">
-              <div class="flex items-center gap-3 flex-1">
-                <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" class="w-10 h-auto rounded shadow" />
-                <span class="text-white font-bold">{{ partido.equipoLocal.nombre }}</span>
-              </div>
+  <!-- Partidos -->
+  @if (!cargando()) {
+    <div class="flex flex-col gap-3">
+      @for (partido of partidos(); track partido._id) {
 
-              <div class="px-6 text-center">
-                @if (partido.finalizado) {
-                  <span class="text-[#ffd700] font-black text-2xl">{{ partido.golesLocal }} - {{ partido.golesVisitante }}</span>
-                } @else {
-                  <span class="text-gray-500 font-bold text-lg">vs</span>
-                }
-              </div>
+        <div [class]="partido.finalizado && getPuntosPartido(partido._id) !== null
+          ? getPuntosPartido(partido._id) === 500
+            ? 'bg-emerald-500/8 border border-emerald-500/40 rounded-2xl p-5 transition'
+            : getPuntosPartido(partido._id) === 200
+            ? 'bg-blue-500/8 border border-blue-500/30 rounded-2xl p-5 transition'
+            : 'bg-red-500/5 border border-red-500/20 rounded-2xl p-5 transition'
+          : 'bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition'">
 
-              <div class="flex items-center gap-3 flex-1 flex-row-reverse">
-                <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" class="w-10 h-auto rounded shadow" />
-                <span class="text-white font-bold text-right">{{ partido.equipoVisitante.nombre }}</span>
-              </div>
+          <!-- Fecha + estado predicción -->
+          <div class="flex items-center justify-between">
+            <span class="text-gray-500 text-xs font-medium uppercase tracking-wider">
+              {{ partido.fechaHora | date:'dd/MM HH:mm' }}
+            </span>
+            @if (!partido.finalizado && !jornandaCerrada()) {
+              @if (yaPredicho(partido._id)) {
+                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                  <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                  PREDICHO
+                </span>
+              } @else {
+                <span class="text-xs font-bold text-[#e63946] flex items-center gap-1 animate-pulse">
+                  <span class="w-2 h-2 bg-[#e63946] rounded-full"></span>
+                  SIN PREDECIR
+                </span>
+              }
+            }
+          </div>
+
+          <!-- Equipos -->
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center gap-3 flex-1">
+              <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" class="w-10 h-auto rounded shadow" />
+              <span class="text-white font-bold">{{ partido.equipoLocal.nombre }}</span>
             </div>
 
-            <!-- Predicción activa -->
-            @if (!partido.finalizado && !jornandaCerrada()) {
-              <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
-                <span class="text-gray-400 text-sm">Tu predicción:</span>
-               <input
+            <div class="px-6 text-center">
+              @if (inputsPrediccion[partido._id] && yaPredicho(partido._id)) {
+                <p class="text-gray-500 text-xs mb-1">
+                  {{ inputsPrediccion[partido._id].local }} - {{ inputsPrediccion[partido._id].visitante }}
+                </p>
+              }
+              @if (partido.finalizado) {
+                <span class="text-[#ffd700] font-black text-2xl">{{ partido.golesLocal }} - {{ partido.golesVisitante }}</span>
+              } @else {
+                <span class="text-gray-500 font-bold text-lg">vs</span>
+              }
+            </div>
+
+            <div class="flex items-center gap-3 flex-1 flex-row-reverse">
+              <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" class="w-10 h-auto rounded shadow" />
+              <span class="text-white font-bold text-right">{{ partido.equipoVisitante.nombre }}</span>
+            </div>
+          </div>
+
+          <!-- Predicción activa -->
+          @if (!partido.finalizado && !jornandaCerrada()) {
+            <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
+              <span class="text-gray-400 text-sm">Tu predicción:</span>
+              <input
                 type="text"
                 [(ngModel)]="inputsPrediccion[partido._id].local"
                 class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
@@ -93,38 +107,53 @@
                 [(ngModel)]="inputsPrediccion[partido._id].visitante"
                 class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
               />
-                <button
-                  (click)="guardarPrediccion(partido._id)"
-                  class="bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-4 py-2 rounded-lg text-sm transition">
-                  Guardar
-                </button>
-                @if (mensajes[partido._id]) {
-                  <span class="text-emerald-400 text-sm font-medium">{{ mensajes[partido._id] }}</span>
-                }
-              </div>
-            }
+              <button
+                (click)="guardarPrediccion(partido._id)"
+                class="bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-4 py-2 rounded-lg text-sm transition">
+                Guardar
+              </button>
+              @if (mensajes[partido._id]) {
+                <span class="text-emerald-400 text-sm font-medium">{{ mensajes[partido._id] }}</span>
+              }
+            </div>
+          }
 
-            <!-- Predicción cerrada -->
-            @if (jornandaCerrada() && inputsPrediccion[partido._id]) {
-              <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
-                <span class="text-gray-400 text-sm">Tu predicción:</span>
-                <span class="text-white font-bold">
-                  {{ inputsPrediccion[partido._id].local }} - {{ inputsPrediccion[partido._id].visitante }}
+          <!-- Predicción cerrada -->
+          @if (jornandaCerrada() && inputsPrediccion[partido._id]) {
+            <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
+              <span class="text-gray-400 text-sm">Tu predicción:</span>
+              <span class="text-white font-bold">
+                {{ inputsPrediccion[partido._id].local }} - {{ inputsPrediccion[partido._id].visitante }}
+              </span>
+              @if (getPuntosPartido(partido._id) !== null) {
+                <span [class]="getPuntosPartido(partido._id)! > 0
+                  ? 'ml-auto font-black text-sm ' + (getPuntosPartido(partido._id) === 500 ? 'text-[#ffd700]' : 'text-emerald-400')
+                  : 'ml-auto font-black text-sm text-red-400'">
+                  {{ getPuntosPartido(partido._id) === 500 ? '🎯 500 pts' :
+                     getPuntosPartido(partido._id) === 200 ? '✅ 200 pts' : '❌ 0 pts' }}
                 </span>
-                @if (getPuntosPartido(partido._id) !== null) {
-                  <span [class]="getPuntosPartido(partido._id)! > 0
-                    ? 'ml-auto font-black text-sm ' + (getPuntosPartido(partido._id) === 500 ? 'text-[#ffd700]' : 'text-emerald-400')
-                    : 'ml-auto font-black text-sm text-red-400'">
-                    {{ getPuntosPartido(partido._id) === 500 ? '🎯 500 pts' :
-                       getPuntosPartido(partido._id) === 200 ? '✅ 200 pts' : '❌ 0 pts' }}
-                  </span>
-                }
-              </div>
-            }
+              }
+            </div>
+          }
 
-          </div>
-        }
-      </div>
-    }
+        </div>
+      }
+    </div>
+  }
 
-  </div>
+  <!-- Botón scroll arriba -->
+  <button
+    (click)="scrollArriba()"
+    class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50
+          bg-[#e63946]/90 backdrop-blur-md hover:bg-[#c1121f]
+          text-white w-11 h-11 sm:w-14 sm:h-14
+          rounded-xl sm:rounded-2xl
+          shadow-2xl border border-white/10
+          flex items-center justify-center
+          transition-all duration-300 hover:scale-110 active:scale-95">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+    </svg>
+  </button>
+
+</div>

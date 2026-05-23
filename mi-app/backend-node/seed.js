@@ -188,7 +188,15 @@ const seedData = async () => {
       { fase: j3, equipoLocal: equipoMap['Jordania'],            equipoVisitante: equipoMap['Argentina'],           fechaHora: new Date('2026-06-28T04:00:00') },
     ]);
     console.log('✅ 72 partidos de fase de grupos creados');
+    const Prediccion = require('./models/Prediccion');
+    const PrediccionEspecial = require('./models/PrediccionEspecial');
+    const Usuario = require('./models/Usuario');
 
+    // Limpiar predicciones y resetear puntos
+    await Prediccion.deleteMany({});
+    await PrediccionEspecial.deleteMany({});
+    await Usuario.updateMany({}, { puntosTotales: 0 });
+    console.log('🗑️ Predicciones eliminadas y puntos reseteados');
     console.log('🎉 Seed completado con éxito');
     process.exit(0);
 

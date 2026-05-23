@@ -16,6 +16,11 @@ export class LayoutComponent {
   editandoNombre = signal<boolean>(false);
   nuevoNombre = signal<string>('');
   errorNombre = signal<string>('');
+  menuAbierto = signal<boolean>(false);
+
+  toggleMenu(): void {
+    this.menuAbierto.set(!this.menuAbierto());
+  }
 
   constructor(private authService: AuthService, private router: Router) {
     this.usuario = this.authService.getUsuario();
