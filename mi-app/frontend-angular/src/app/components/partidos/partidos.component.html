@@ -85,15 +85,13 @@
           </div>
 
           <!-- Equipos -->
-          <!-- FIX: items-start para alinear arriba cuando el nombre se parte en 2 líneas -->
-          <div class="flex items-start justify-between mt-3">
-            <div class="flex items-start gap-3 flex-1">
-              <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" class="w-10 h-auto rounded shadow mt-0.5" />
-              <!-- FIX: text-sm leading-tight para nombres largos -->
-              <span class="text-white font-bold text-sm leading-tight">{{ partido.equipoLocal.nombre }}</span>
-            </div>
 
-            <div class="px-4 text-center shrink-0 pt-1">
+          <div class="flex items-start justify-between mt-3">
+            <div class="flex items-start gap-3 flex-1 min-w-0">
+              <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" class="w-10 h-auto rounded shadow mt-0.5 shrink-0" />
+              <span class="text-white font-bold text-xs leading-tight">{{ partido.equipoLocal.nombre }}</span>
+            </div>
+            <div class="px-2 text-center w-20 shrink-0 pt-1">
               @if (inputsPrediccion[partido._id] && yaPredicho(partido._id)) {
                 <p class="text-gray-500 text-xs mb-1">
                   {{ inputsPrediccion[partido._id].local }} - {{ inputsPrediccion[partido._id].visitante }}
@@ -105,13 +103,11 @@
                 <span class="text-gray-500 font-bold text-lg">vs</span>
               }
             </div>
-
-            <div class="flex items-start gap-3 flex-1 flex-row-reverse">
-              <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" class="w-10 h-auto rounded shadow mt-0.5" />
-              <!-- FIX: text-sm leading-tight para nombres largos -->
-              <span class="text-white font-bold text-sm leading-tight text-right">{{ partido.equipoVisitante.nombre }}</span>
+            <div class="flex items-start gap-3 flex-1 min-w-0 flex-row-reverse">
+              <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" class="w-10 h-auto rounded shadow mt-0.5 shrink-0" />
+              <span class="text-white font-bold text-xs leading-tight text-right">{{ partido.equipoVisitante.nombre }}</span>
             </div>
-          </div>
+          </div>  
 
           @if (!partido.finalizado && !jornandaCerrada()) {
             <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
