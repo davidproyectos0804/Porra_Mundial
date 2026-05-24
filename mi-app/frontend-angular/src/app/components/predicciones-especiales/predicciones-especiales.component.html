@@ -1,9 +1,10 @@
-<div class="max-w-3xl mx-auto px-4 py-6">
+<div class="max-w-3xl mx-auto px-4 py-6 pb-24">
 
   <!-- Título -->
   <div class="text-center mb-8">
     <p class="text-gray-500 text-xs font-bold uppercase tracking-[0.4em] mb-3">Predicciones</p>
-    <h2 class="text-5xl font-black text-white uppercase tracking-[0.2em]">ESPECIALES</h2>
+    <!-- FIX: text-5xl → text-3xl para que no se salga en móvil -->
+    <h2 class="text-3xl font-black text-white uppercase tracking-[0.2em]">ESPECIALES</h2>
     <div class="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#e63946] to-transparent mx-auto mt-4"></div>
     <p class="text-gray-400 text-sm mt-4">Cada predicción acertada vale <span class="text-[#ffd700] font-black">1000 pts</span></p>
   </div>
@@ -49,11 +50,12 @@
             <div [class]="getPrediccionActual(tipo.key)?.puntosObtenidos === 1000
               ? 'bg-emerald-500/8 border border-emerald-500/40 rounded-2xl p-5'
               : 'bg-red-500/5 border border-red-500/20 rounded-2xl p-5'">
+              <!-- FIX: header en dos líneas separadas para evitar overflow -->
               <div class="flex items-center justify-between mb-3">
-                <h3 class="text-white font-black text-lg">{{ tipo.label }}</h3>
+                <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
                 <span [class]="getPrediccionActual(tipo.key)?.puntosObtenidos === 1000
-                  ? 'text-[#ffd700] font-black'
-                  : 'text-red-400 font-black'">
+                  ? 'text-[#ffd700] font-black text-sm'
+                  : 'text-red-400 font-black text-sm'">
                   {{ getPrediccionActual(tipo.key)?.puntosObtenidos === 1000 ? '🎯 1000 pts' : '❌ 0 pts' }}
                 </span>
               </div>
@@ -70,9 +72,12 @@
           } @else {
             <!-- Predicción activa -->
             <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-white font-black text-lg">{{ tipo.label }}</h3>
-                <div class="flex items-center gap-3">
+
+              <!-- FIX: header — título a la izquierda, badges apilados a la derecha en col -->
+              <div class="flex items-start justify-between mb-4">
+                <h3 class="text-white font-black text-base flex-1 mr-3">{{ tipo.label }}</h3>
+                <div class="flex flex-col items-end gap-1 shrink-0">
+                  <span class="text-[#ffd700] text-xs font-black">1000 PTS</span>
                   @if (!cerrado()) {
                     @if (getPrediccionActual(tipo.key)) {
                       <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
@@ -86,32 +91,32 @@
                       </span>
                     }
                   }
-                  <span class="text-[#ffd700] text-xs font-black">1000 PTS</span>
                 </div>
               </div>
 
               @if (!cerrado()) {
-                <div class="flex items-center gap-3">
-                  <select
-                    [(ngModel)]="selecciones[tipo.key]"
-                    class="flex-1 bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#e63946] transition">
-                    <option value="" disabled selected class="bg-[#0a1628]">Selecciona un equipo...</option>
-                    @for (equipo of getEquiposPorTipo(tipo.key); track equipo._id) {
-                      <option [value]="equipo._id" class="bg-[#0a1628]">{{ equipo.nombre }}</option>
-                    }
-                  </select>
-
-                  @if (selecciones[tipo.key]) {
-                    @for (equipo of getEquiposPorTipo(tipo.key); track equipo._id) {
-                      @if (equipo._id === selecciones[tipo.key]) {
-                        <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow" />
+                <!-- FIX: select ocupa toda la fila, botón + bandera debajo -->
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center gap-3">
+                    <select
+                      [(ngModel)]="selecciones[tipo.key]"
+                      class="flex-1 bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#e63946] transition">
+                      <option value="" disabled selected class="bg-[#0a1628]">Selecciona un equipo...</option>
+                      @for (equipo of getEquiposPorTipo(tipo.key); track equipo._id) {
+                        <option [value]="equipo._id" class="bg-[#0a1628]">{{ equipo.nombre }}</option>
+                      }
+                    </select>
+                    @if (selecciones[tipo.key]) {
+                      @for (equipo of getEquiposPorTipo(tipo.key); track equipo._id) {
+                        @if (equipo._id === selecciones[tipo.key]) {
+                          <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow shrink-0" />
+                        }
                       }
                     }
-                  }
-
+                  </div>
                   <button
                     (click)="guardarPrediccion(tipo.key)"
-                    class="bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-4 py-2 rounded-lg text-sm transition">
+                    class="w-full bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-4 py-2 rounded-lg text-sm transition">
                     Guardar
                   </button>
                 </div>
@@ -155,7 +160,7 @@
         @for (tipo of tiposJugador; track tipo.key) {
           <div class="bg-white/3 border border-white/5 rounded-2xl p-5 mb-3 opacity-40">
             <div class="flex items-center justify-between">
-              <h3 class="text-white font-black text-lg">{{ tipo.label }}</h3>
+              <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
               <span class="text-[#ffd700] text-xs font-black">1000 PTS</span>
             </div>
             <p class="text-gray-500 text-sm mt-2">Próximamente...</p>
