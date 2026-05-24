@@ -3,7 +3,8 @@
   <!-- Título -->
   <div class="text-center mb-8">
     <p class="text-gray-500 text-xs font-bold uppercase tracking-[0.4em] mb-3">Tabla de clasificación</p>
-    <h2 class="text-5xl font-black text-white uppercase tracking-[0.2em]">RANKING</h2>
+    <!-- FIX: text-5xl → text-3xl igual que especiales -->
+    <h2 class="text-3xl font-black text-white uppercase tracking-[0.2em]">RANKING</h2>
     <div class="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#e63946] to-transparent mx-auto mt-4"></div>
   </div>
 
@@ -51,21 +52,23 @@
           </div>
 
           <!-- Nombre con foto -->
-          <div class="col-span-8 flex items-center gap-3 pl-4">
+          <!-- FIX: min-w-0 en el contenedor para que truncate funcione -->
+          <div class="col-span-8 flex items-center gap-3 pl-4 min-w-0">
             @if (u.fotoPerfil) {
-              <img [src]="u.fotoPerfil" class="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-white/20" />
+              <img [src]="u.fotoPerfil" class="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-white/20" />
             } @else {
-              <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+              <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
                 <span class="text-white font-black text-xs">{{ u.nombre.charAt(0).toUpperCase() }}</span>
               </div>
             }
+            <!-- FIX: truncate para nombres largos -->
             <span [class]="u._id === this.usuario?.id
-              ? 'text-white font-black text-base'
-              : i < 3 ? 'text-white font-bold text-base' : 'text-gray-300 font-medium text-base'">
+              ? 'text-white font-black text-sm truncate'
+              : i < 3 ? 'text-white font-bold text-sm truncate' : 'text-gray-300 font-medium text-sm truncate'">
               {{ u.nombre }}
             </span>
             @if (u._id === this.usuario?.id) {
-              <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">tú</span>
+              <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">tú</span>
             }
           </div>
 
@@ -96,16 +99,17 @@
         <div class="col-span-1 flex items-center justify-center">
           <span class="text-white font-black text-lg">{{ miPosicion().posicion }}</span>
         </div>
-        <div class="col-span-8 flex items-center gap-3 pl-4">
+        <div class="col-span-8 flex items-center gap-3 pl-4 min-w-0">
           @if (miPosicion().fotoPerfil) {
-            <img [src]="miPosicion().fotoPerfil" class="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+            <img [src]="miPosicion().fotoPerfil" class="w-7 h-7 rounded-full object-cover shrink-0" />
           } @else {
-            <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+            <div class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center shrink-0">
               <span class="text-white font-black text-xs">{{ miPosicion().nombre?.charAt(0).toUpperCase() }}</span>
             </div>
           }
-          <span class="text-white font-black text-base">{{ miPosicion().nombre }}</span>
-          <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">tú</span>
+          <!-- FIX: truncate también en el pie -->
+          <span class="text-white font-black text-sm truncate">{{ miPosicion().nombre }}</span>
+          <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">tú</span>
         </div>
         <div class="col-span-3 flex items-center justify-end">
           <span class="text-white font-black text-xl tabular-nums">{{ miPosicion().puntosTotales }}</span>
