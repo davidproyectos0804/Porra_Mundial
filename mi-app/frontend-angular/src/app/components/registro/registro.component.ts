@@ -23,23 +23,25 @@ export class RegistroComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  
   ngOnInit(): void {
-    google.accounts.id.initialize({
-      client_id: '539168963154-u24hmnfhs8ref84r7obi3vrke9duf64u.apps.googleusercontent.com',
-      callback: (response: any) => this.handleGoogleResponse(response)
-    });
+  google.accounts.id.initialize({
+    client_id: '539168963154-u24hmnfhs8ref84r7obi3vrke9duf64u.apps.googleusercontent.com',
+    callback: (response: any) => this.handleGoogleResponse(response)
+  });
 
-    google.accounts.id.renderButton(
-      document.getElementById('google-btn-registro'),
-      {
-        theme: 'filled_black',
-        size: 'large',
-        width: 350,
-        text: 'signup_with',
-        shape: 'rectangular'
-      }
-    );
-  }
+  // Esperar a que el DOM esté listo para leer el ancho real
+  setTimeout(() => {
+  const btn = document.getElementById('google-btn-registro'); // FIX: nombre correcto
+  google.accounts.id.renderButton(btn, {
+    theme: 'filled_black',
+    size: 'large',
+    width: btn!.offsetWidth,
+    text: 'continue_with',
+    shape: 'rectangular'
+  });
+}, 0);
+}
 
   handleGoogleResponse(response: any): void {
     this.authService.googleLogin(response.credential).subscribe({

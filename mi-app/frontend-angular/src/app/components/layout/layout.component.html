@@ -1,14 +1,12 @@
-
 <div class="min-h-screen bg-[#0a1628]">
- 
+
   <!-- Header -->
   <header class="border-b border-white/5 sticky top-0 z-50 backdrop-blur-xl bg-[#0a1628]/80">
     <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#e63946] via-[#ffd700] to-[#e63946]"></div>
- 
+
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
- 
+
       <!-- Logo -->
-      <!-- FIX: en móvil solo se muestra icono + "Porra Mundial" en una línea, sin el subtítulo -->
       <a routerLink="/partidos" class="flex items-center gap-2 group shrink-0">
         <span class="block transition-all duration-300 group-hover:scale-110 group-hover:rotate-6">
           <img src="logo.png" alt="Logo" class="w-9 h-9 md:w-10 md:h-10">
@@ -17,11 +15,10 @@
           <span class="text-white font-black text-sm md:text-base uppercase tracking-[0.15em] leading-none group-hover:text-[#e63946] transition-colors duration-300">
             Porra Mundial
           </span>
-          <!-- FIX: subtítulo solo visible en desktop -->
           <span class="hidden md:block text-[#ffd700] font-bold text-[9px] tracking-[0.3em] uppercase">FIFA World Cup 2026</span>
         </div>
       </a>
- 
+
       <!-- Nav desktop -->
       <nav class="hidden md:flex items-center">
         <a routerLink="/partidos" routerLinkActive="!text-white"
@@ -47,14 +44,15 @@
           </a>
         }
       </nav>
- 
+
       <!-- Usuario desktop -->
-      <div class="hidden md:flex items-center gap-4">
+      <div class="hidden md:flex items-center gap-4 shrink-0">
         <div class="flex flex-col items-end">
           @if (!editandoNombre()) {
-            <div class="flex items-center gap-1">
-              <span class="text-white text-sm font-bold leading-none">{{ usuario?.nombre }}</span>
-              <button (click)="abrirEditarNombre()" class="text-gray-600 hover:text-gray-400 transition text-xs ml-1">✏️</button>
+            <div class="flex items-center gap-1 max-w-[150px]">
+              <!-- FIX: truncate + max-w para que no empuje la nav -->
+              <span class="text-white text-sm font-bold leading-none truncate max-w-[120px]">{{ usuario?.nombre }}</span>
+              <button (click)="abrirEditarNombre()" class="text-gray-600 hover:text-gray-400 transition text-xs ml-1 shrink-0">✏️</button>
             </div>
           } @else {
             <div class="flex flex-col items-end gap-1">
@@ -75,9 +73,9 @@
           }
           <span class="text-[#ffd700] text-xs font-black mt-1 tracking-wider">{{ usuario?.puntosTotales }} PTS</span>
         </div>
- 
+
         <div class="w-px h-8 bg-white/10"></div>
- 
+
         <div class="relative group cursor-pointer" (click)="abrirSelectorFoto()">
           @if (fotoPerfil()) {
             <img [src]="fotoPerfil()" class="w-9 h-9 rounded-full object-cover ring-2 ring-white/20 group-hover:ring-[#e63946]/50 transition-all duration-300" />
@@ -90,13 +88,13 @@
             <span class="text-white text-xs">✏️</span>
           </div>
         </div>
- 
+
         <button (click)="logout()" class="text-gray-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition-all duration-200">
           Cerrar sesión →
         </button>
       </div>
- 
-      <!-- FIX: Móvil — todo en items-center, gap uniforme, pts + avatar + hamburguesa bien alineados -->
+
+      <!-- Móvil: pts + avatar + hamburguesa -->
       <div class="flex md:hidden items-center gap-2 shrink-0">
         <span class="text-[#ffd700] text-xs font-black tracking-wide">{{ usuario?.puntosTotales }} PTS</span>
         <div class="w-px h-5 bg-white/20"></div>
@@ -121,20 +119,21 @@
           }
         </button>
       </div>
- 
+
     </div>
- 
+
     <!-- Menú móvil desplegable -->
     @if (menuAbierto()) {
       <div class="md:hidden border-t border-white/10 bg-[#0a1628]">
         <div class="px-4 py-3 flex flex-col gap-1">
- 
+
           <!-- Nombre editable -->
           <div class="pb-3 mb-2 border-b border-white/10">
             @if (!editandoNombre()) {
               <div class="flex items-center gap-2">
-                <p class="text-white font-bold text-sm">{{ usuario?.nombre }}</p>
-                <button (click)="abrirEditarNombre()" class="text-gray-600 hover:text-gray-400 transition text-xs">✏️</button>
+                <!-- FIX: truncate en el menú móvil también -->
+                <p class="text-white font-bold text-sm truncate max-w-[200px]">{{ usuario?.nombre }}</p>
+                <button (click)="abrirEditarNombre()" class="text-gray-600 hover:text-gray-400 transition text-xs shrink-0">✏️</button>
               </div>
             } @else {
               <div class="flex flex-col gap-2">
@@ -155,7 +154,7 @@
             }
             <p class="text-[#ffd700] text-xs font-black mt-1">{{ usuario?.puntosTotales }} PTS</p>
           </div>
- 
+
           <!-- Enlaces -->
           <a routerLink="/partidos" (click)="menuAbierto.set(false)"
             class="text-gray-400 hover:text-white py-2 text-sm font-semibold uppercase tracking-wider transition">
@@ -178,16 +177,14 @@
           <button (click)="logout()" class="text-left text-red-400 py-2 text-sm font-semibold uppercase tracking-wider mt-2 border-t border-white/10 pt-3">
             Cerrar sesión →
           </button>
- 
+
         </div>
       </div>
     }
- 
+
   </header>
- 
+
   <!-- Contenido -->
   <router-outlet />
- 
-</div>
- 
 
+</div>

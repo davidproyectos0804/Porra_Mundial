@@ -24,23 +24,23 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    google.accounts.id.initialize({
-      client_id: '539168963154-u24hmnfhs8ref84r7obi3vrke9duf64u.apps.googleusercontent.com',
-      callback: (response: any) => this.handleGoogleResponse(response)
+  google.accounts.id.initialize({
+    client_id: '539168963154-u24hmnfhs8ref84r7obi3vrke9duf64u.apps.googleusercontent.com',
+    callback: (response: any) => this.handleGoogleResponse(response)
+  });
+
+  // Esperar a que el DOM esté listo para leer el ancho real
+  setTimeout(() => {
+    const btn = document.getElementById('google-btn');
+    google.accounts.id.renderButton(btn, {
+      theme: 'filled_black',
+      size: 'large',
+      width: btn!.offsetWidth,
+      text: 'signin_with',
+      shape: 'rectangular'
     });
-
-    google.accounts.id.renderButton(
-      document.getElementById('google-btn'),
-      {
-        theme: 'filled_black',
-        size: 'large',
-        width: 350,
-        text: 'signin_with',
-        shape: 'rectangular'
-      }
-    );
-  }
-
+  }, 0);
+}
   handleGoogleResponse(response: any): void {
     this.authService.googleLogin(response.credential).subscribe({
       next: (res) => {
