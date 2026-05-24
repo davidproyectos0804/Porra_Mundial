@@ -1,13 +1,15 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // REGISTRO
 const register = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
 
-    // Validaciones
     if (!nombre || !email || !password) {
       return res.status(400).json({ message: 'Todos los campos son obligatorios' });
     }
@@ -16,17 +18,14 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
     }
 
-    // Comprobar si el usuario ya existe
     const usuarioExiste = await Usuario.findOne({ email });
     if (usuarioExiste) {
       return res.status(400).json({ message: 'El email ya está registrado' });
     }
 
-    // Encriptar contraseña
     const salt = await bcrypt.genSalt(10);
     const passwordEncriptada = await bcrypt.hash(password, salt);
 
-    // Crear usuario verificado directamente
     const usuario = await Usuario.create({
       nombre,
       email,
@@ -35,7 +34,6 @@ const register = async (req, res) => {
       tokenVerificacion: null
     });
 
-    // Generar token
     const token = jwt.sign(
       { id: usuario._id, rol: usuario.rol },
       process.env.JWT_SECRET,
@@ -73,7 +71,6 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Email o contraseña incorrectos' });
     }
 
-    // Comprobar contraseña — si no tiene password es cuenta de Google
     if (!usuario.password) {
       return res.status(400).json({ message: 'Esta cuenta usa Google para iniciar sesión' });
     }
@@ -106,4 +103,68 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+// GOOGLE LOGIN
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ message: 'Token de Google requerido' });
+    }
+
+    // Verificar el token con Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    // Buscar o crear usuario
+    let usuario = await Usuario.findOne({ email });
+
+    if (!usuario) {
+      usuario = await Usuario.create({
+        nombre: name,
+        email,
+        password: null,
+        verificado: true,
+        fotoPerfil: picture || null,
+        googleId
+      });
+      } else {
+        // FIX: actualizar foto y googleId si no los tenía
+        if (!usuario.fotoPerfil && picture) {
+          usuario.fotoPerfil = picture;
+        }
+        if (!usuario.googleId) {
+          usuario.googleId = googleId;
+        }
+        await usuario.save();
+      }
+
+    const token = jwt.sign(
+      { id: usuario._id, rol: usuario.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      token,
+      usuario: {
+        id: usuario._id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol,
+        puntosTotales: usuario.puntosTotales,
+        fotoPerfil: usuario.fotoPerfil
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error verificando token de Google', error: error.message });
+  }
+};
+
+module.exports = { register, login, googleLogin };

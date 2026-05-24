@@ -52,7 +52,15 @@
           {{ cargando ? 'Entrando...' : 'Entrar' }}
         </button>
       </form>
+      <!-- Separador -->
+      <div class="flex items-center gap-3 my-4">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <span class="text-gray-500 text-xs">o</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
 
+      <!-- Botón Google -->
+      <div id="google-btn" class="flex justify-center"></div>
       <p class="text-center text-gray-400 mt-6 text-sm">
         ¿No tienes cuenta?
         <a routerLink="/registro" class="text-[#ffd700] font-bold hover:underline">Regístrate aquí</a>

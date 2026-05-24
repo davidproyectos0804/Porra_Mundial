@@ -12,7 +12,7 @@ const usuarioSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true
+    default: null  // ← no required, puede ser null para usuarios de Google
   },
   rol: {
     type: String,
@@ -25,15 +25,19 @@ const usuarioSchema = new mongoose.Schema({
   },
   verificado: {
     type: Boolean,
-    default: false // Por defecto no verificado
+    default: true
   },
   tokenVerificacion: {
     type: String,
-    default: null // Token que se envía por email
+    default: null
   },
   fotoPerfil: {
     type: String,
     default: null
+  },
+  googleId: {
+    type: String,
+    default: null  // ← nuevo campo
   },
   fechaRegistro: {
     type: Date,

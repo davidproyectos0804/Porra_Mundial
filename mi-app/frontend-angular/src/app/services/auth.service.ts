@@ -100,4 +100,9 @@ export class AuthService {
       })
     );
   }
+  googleLogin(credential: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/auth/google`, { credential }).pipe(
+      tap((res: any) => this.guardarSesion(res))
+    );
+  }
 }

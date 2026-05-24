@@ -3,12 +3,12 @@
 
     <!-- Logo y título -->
     <div class="flex items-center justify-center gap-3 mb-8">
-  <img src="logo.png" alt="Logo" class="w-14 h-14">
-  <div class="flex flex-col">
-    <span class="text-white font-black text-2xl uppercase tracking-[0.2em] leading-none">Porra Mundial</span>
-    <span class="text-[#ffd700] font-bold text-[9px] tracking-[0.3em] uppercase mt-1">FIFA World Cup 2026</span>
-  </div>
-</div>
+      <img src="logo.png" alt="Logo" class="w-14 h-14">
+      <div class="flex flex-col">
+        <span class="text-white font-black text-2xl uppercase tracking-[0.2em] leading-none">Porra Mundial</span>
+        <span class="text-[#ffd700] font-bold text-[9px] tracking-[0.3em] uppercase mt-1">FIFA World Cup 2026</span>
+      </div>
+    </div>
 
     <!-- Card -->
     <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8">
@@ -19,7 +19,6 @@
           {{ error }}
         </div>
       }
-
 
       <form (ngSubmit)="onSubmit()">
         <div class="mb-4">
@@ -77,6 +76,16 @@
           {{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}
         </button>
       </form>
+
+      <!-- Separador -->
+      <div class="flex items-center gap-3 my-4">
+        <div class="flex-1 h-px bg-white/10"></div>
+        <span class="text-gray-500 text-xs">o</span>
+        <div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <!-- Botón Google -->
+      <div id="google-btn-registro" class="flex justify-center"></div>
 
       <p class="text-center text-gray-400 mt-6 text-sm">
         ¿Ya tienes cuenta?
