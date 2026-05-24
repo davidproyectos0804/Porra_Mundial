@@ -1,8 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Subscription, filter } from 'rxjs';
 
 @Component({
   selector: 'app-layout',
@@ -10,7 +11,8 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, FormsModule, RouterLink, RouterOutlet],
   templateUrl: './layout.component.html',
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit, OnDestroy {
+
   usuario: any;
   fotoPerfil = signal<string | null>(null);
   editandoNombre = signal<boolean>(false);
@@ -18,13 +20,37 @@ export class LayoutComponent {
   errorNombre = signal<string>('');
   menuAbierto = signal<boolean>(false);
 
-  toggleMenu(): void {
-    this.menuAbierto.set(!this.menuAbierto());
+  private subs = new Subscription();
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit(): void {
+    // Suscripción al usuario reactivo — se actualiza solo cuando cambian los datos
+    this.subs.add(
+      this.authService.usuario$.subscribe(usuario => {
+        this.usuario = usuario;
+        this.fotoPerfil.set(usuario?.fotoPerfil || null);
+      })
+    );
+
+    // Refresca los puntos del backend cada vez que el usuario navega a una página
+    this.subs.add(
+      this.router.events.pipe(
+        filter(e => e instanceof NavigationEnd)
+      ).subscribe(() => {
+        if (this.authService.isLoggedIn()) {
+          this.authService.refreshUsuario();
+        }
+      })
+    );
   }
 
-  constructor(private authService: AuthService, private router: Router) {
-    this.usuario = this.authService.getUsuario();
-    this.fotoPerfil.set(this.usuario?.fotoPerfil || null);
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  toggleMenu(): void {
+    this.menuAbierto.set(!this.menuAbierto());
   }
 
   abrirSelectorFoto(): void {
@@ -40,9 +66,7 @@ export class LayoutComponent {
 
   subirFoto(file: File): void {
     this.authService.subirFoto(file).subscribe({
-      next: (res) => {
-        this.fotoPerfil.set(res.fotoPerfil);
-      },
+      next: (res) => this.fotoPerfil.set(res.fotoPerfil),
       error: (err) => console.error('Error subiendo foto:', err)
     });
   }
@@ -55,23 +79,12 @@ export class LayoutComponent {
 
   guardarNombre(): void {
     const nombre = this.nuevoNombre().trim();
-
-    if (!nombre) {
-      this.errorNombre.set('El nombre no puede estar vacío');
-      return;
-    }
-    if (nombre.length < 3) {
-      this.errorNombre.set('Mínimo 3 caracteres');
-      return;
-    }
-    if (nombre.length > 20) {
-      this.errorNombre.set('Máximo 20 caracteres');
-      return;
-    }
+    if (!nombre) { this.errorNombre.set('El nombre no puede estar vacío'); return; }
+    if (nombre.length < 3) { this.errorNombre.set('Mínimo 3 caracteres'); return; }
+    if (nombre.length > 20) { this.errorNombre.set('Máximo 20 caracteres'); return; }
 
     this.authService.cambiarNombre(nombre).subscribe({
-      next: (res) => {
-        this.usuario.nombre = res.nombre;
+      next: () => {
         this.editandoNombre.set(false);
         this.errorNombre.set('');
       },
