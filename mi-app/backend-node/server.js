@@ -26,7 +26,16 @@ app.use('/api', routes);
 app.get('/', (req, res) => {
   res.json({ message: 'Backend API is running!' });
 });
+const { transporter } = require('./services/emailService');
 
+app.get('/test-email', async (req, res) => {
+  try {
+    await transporter.verify();
+    res.json({ ok: true, message: 'Conexión SMTP funciona!' });
+  } catch (error) {
+    res.json({ ok: false, error: error.message });
+  }
+});
 // Conectar a MongoDB Atlas y arrancar servidor
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
