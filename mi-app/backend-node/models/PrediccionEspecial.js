@@ -10,32 +10,36 @@ const prediccionEspecialSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: [
-      'Ganador del mundial',
-      'Subcampeon',
-      'Goleador',
-      'Seleccion decepcion',
-      'MVP del mundial'
-    ]
+    'Ganador del mundial',
+    'Subcampeon',
+    'Seleccion decepcion',
+    'Mejor anfitrion',
+    'Equipo mas goleador',
+    'Equipo menos goleado',
+    'Equipo sorpresa',
+    'Goleador',
+    'MVP del mundial',
+    'Mejor portero',
+    'Maximo asistente',
+    'Mejor jugador joven'
+  ]
   },
-  // Lo que predice el usuario
-  // Puede ser un equipo o un jugador según el tipo
   valorPredicho: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'tipoValor', // Referencia dinámica
+    refPath: 'tipoValor',
     required: true
   },
   tipoValor: {
     type: String,
     required: true,
-    enum: ['Equipo', 'Jugador'] // Ganador/Subcampeon/Decepcion = Equipo, Goleador/MVP = Jugador
+    enum: ['Equipo', 'Jugador']
   },
   puntosObtenidos: {
     type: Number,
-    default: null // null hasta que se resuelva al final del mundial
+    default: null
   }
 }, { timestamps: true });
 
-// Un usuario solo puede hacer cada tipo de predicción una vez
 prediccionEspecialSchema.index({ usuario: 1, tipo: 1 }, { unique: true });
 
 module.exports = mongoose.model('PrediccionEspecial', prediccionEspecialSchema);

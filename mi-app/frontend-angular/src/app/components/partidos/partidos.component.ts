@@ -247,7 +247,7 @@ export class PartidosComponent implements OnInit {
 
             this.cdr.detectChanges();
 
-          }, 2000);
+          }, 1000);
 
         },
 

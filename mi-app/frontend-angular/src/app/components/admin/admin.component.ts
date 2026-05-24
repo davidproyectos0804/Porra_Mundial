@@ -9,7 +9,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin.component.html'
 })
 export class AdminComponent implements OnInit {
@@ -18,10 +18,26 @@ export class AdminComponent implements OnInit {
   partidos = signal<any[]>([]);
   faseActual = signal<any>(null);
   cargando = signal<boolean>(true);
+  equipos = signal<any[]>([]);
+  pestanaActiva = signal<'partidos' | 'especiales'>('partidos');
 
-  // Inputs de resultados por partidoId
   inputsResultado: { [partidoId: string]: { local: number, visitante: number } } = {};
   mensajes: { [partidoId: string]: string } = {};
+  resolviendo: { [tipo: string]: boolean } = {};
+  resueltosYa: { [tipo: string]: boolean } = {};
+
+  tiposPrediccion = [
+    { key: 'Ganador del mundial', label: '🏆 Ganador del mundial' },
+    { key: 'Subcampeon', label: '🥈 Subcampeón' },
+    { key: 'Seleccion decepcion', label: '😬 Selección decepción' },
+    { key: 'Mejor anfitrion', label: '🏠 Mejor anfitrión' },
+    { key: 'Equipo mas goleador', label: '🚪 Equipo más goleador' },
+    { key: 'Equipo menos goleado', label: '🧱 Equipo menos goleado' },
+    { key: 'Equipo sorpresa', label: '🔥 Equipo sorpresa' },
+  ];
+
+  seleccionesResolucion: { [tipo: string]: string } = {};
+  mensajesEspeciales: { [tipo: string]: string } = {};
 
   constructor(
     private http: HttpClient,
@@ -31,6 +47,7 @@ export class AdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarFases();
+    this.cargarEquipos();
   }
 
   private getHeaders(): HttpHeaders {
@@ -51,6 +68,14 @@ export class AdminComponent implements OnInit {
         }
       },
       error: () => this.router.navigate(['/partidos'])
+    });
+  }
+
+  cargarEquipos(): void {
+    this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/equipos`, {
+      headers: this.getHeaders()
+    }).subscribe({
+      next: (equipos) => this.equipos.set(equipos)
     });
   }
 
@@ -84,7 +109,6 @@ export class AdminComponent implements OnInit {
   meterResultado(partidoId: string): void {
     const input = this.inputsResultado[partidoId];
 
-    // Validación
     if (input.local < 0 || input.visitante < 0) {
       this.mensajes[partidoId] = '❌ Los goles no pueden ser negativos';
       setTimeout(() => this.mensajes[partidoId] = '', 3000);
@@ -96,13 +120,13 @@ export class AdminComponent implements OnInit {
       setTimeout(() => this.mensajes[partidoId] = '', 3000);
       return;
     }
+
     this.http.put(`${environment.apiUrl}/admin/partidos/${partidoId}/resultado`, {
       golesLocal: input.local,
       golesVisitante: input.visitante
     }, { headers: this.getHeaders() }).subscribe({
       next: (res: any) => {
         this.mensajes[partidoId] = `✅ ${res.message}`;
-        // Actualizar partido como finalizado
         const partidos = this.partidos();
         const index = partidos.findIndex(p => p._id === partidoId);
         if (index !== -1) {
@@ -120,8 +144,36 @@ export class AdminComponent implements OnInit {
     });
   }
 
+  resolverEspecial(tipo: string): void {
+    const valorCorrecto = this.seleccionesResolucion[tipo];
+    if (!valorCorrecto) {
+      this.mensajesEspeciales[tipo] = '❌ Selecciona el valor correcto';
+      setTimeout(() => this.mensajesEspeciales[tipo] = '', 3000);
+      return;
+    }
+
+    this.resolviendo[tipo] = true;
+
+    this.http.put(`${environment.apiUrl}/predicciones-especiales/resolver`, {
+      tipo,
+      valorCorrecto
+    }, { headers: this.getHeaders() }).subscribe({
+      next: (res: any) => {
+        this.mensajesEspeciales[tipo] = `✅ ${res.message}`;
+        this.resolviendo[tipo] = false;
+        this.resueltosYa[tipo] = true;
+        setTimeout(() => this.mensajesEspeciales[tipo] = '', 4000);
+      },
+      error: (err) => {
+        this.mensajesEspeciales[tipo] = '❌ ' + (err.error?.message || 'Error');
+        this.resolviendo[tipo] = false;
+        setTimeout(() => this.mensajesEspeciales[tipo] = '', 3000);
+      }
+    });
+  }
+
   getBanderaUrl(codigo: string): string {
-    return `https://flagcdn.com/w320/${codigo}.png`;
+    return `https://flagcdn.com/w40/${codigo}.png`;
   }
 
   logout(): void {
