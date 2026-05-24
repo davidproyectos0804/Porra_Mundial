@@ -1,14 +1,13 @@
 const nodemailer = require('nodemailer');
-
 // Configurar transporter con Gmail
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  family: 4
 });
-
 // Enviar email de verificación
 const enviarEmailVerificacion = async (email, nombre, token) => {
   const enlace = `${process.env.URL_FRONTEND}/verificar?token=${token}`;
