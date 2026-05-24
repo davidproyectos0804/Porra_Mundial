@@ -6,8 +6,6 @@ export const routes: Routes = [
   { path: '', redirectTo: 'partidos', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) },
   { path: 'registro', loadComponent: () => import('./components/registro/registro.component').then(m => m.RegistroComponent) },
-  { path: 'verificar', loadComponent: () => import('./components/verificar/verificar.component').then(m => m.VerificarComponent) },
-  { path: 'verificar-email', loadComponent: () => import('./components/verificar-email/verificar-email.component').then(m => m.VerificarEmailComponent) },
   {
     path: '',
     loadComponent: () => import('./components/layout/layout.component').then(m => m.LayoutComponent),

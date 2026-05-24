@@ -13,7 +13,6 @@ import { AuthService } from '../../services/auth.service';
 export class RegistroComponent {
   datos = { nombre: '', email: '', password: '', confirmarPassword: '' };
   error = '';
-  exito = '';
   cargando = false;
 
   constructor(
@@ -57,8 +56,12 @@ export class RegistroComponent {
       email: this.datos.email,
       password: this.datos.password
     }).subscribe({
-      next: () => {
-        this.router.navigate(['/verificar-email']);
+      next: (res) => {
+        if (res.usuario.rol === 'admin') {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/partidos']);
+        }
         this.cargando = false;
       },
       error: (err) => {

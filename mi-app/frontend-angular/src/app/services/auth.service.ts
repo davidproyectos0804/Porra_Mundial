@@ -13,8 +13,10 @@ export class AuthService {
 
   // Registro de usuario
   register(datos: { nombre: string, email: string, password: string }): Observable<any> {
-  return this.http.post(`${environment.apiUrl}/auth/register`, datos);
-}
+    return this.http.post(`${environment.apiUrl}/auth/register`, datos).pipe(
+      tap((res: any) => this.guardarSesion(res))
+    );
+  }
 
   // Login de usuario
   login(datos: { email: string, password: string }): Observable<any> {
