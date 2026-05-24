@@ -32,4 +32,4 @@ const enviarEmailVerificacion = async (email, nombre, token) => {
   });
 };
 
-module.exports = { enviarEmailVerificacion };
+module.exports = { enviarEmailVerificacion, transporter };
