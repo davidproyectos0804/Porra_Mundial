@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
   origin: [
     'http://localhost:4200',
-    'https://tuapp.vercel.app'  // esto lo actualizarás después con la URL real de Vercel
+    'https://porra-mundial-theta.vercel.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
