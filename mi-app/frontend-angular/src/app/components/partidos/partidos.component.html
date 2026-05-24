@@ -110,31 +110,46 @@
             </div>
           </div>
 
-          <!-- Predicción activa -->
-          @if (!partido.finalizado && !jornandaCerrada()) {
-            <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
-              <span class="text-gray-400 text-sm">Tu predicción:</span>
-              <input
-                type="text"
-                [(ngModel)]="inputsPrediccion[partido._id].local"
-                class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
-              />
-              <span class="text-gray-400 font-bold">-</span>
-              <input
-                type="text"
-                [(ngModel)]="inputsPrediccion[partido._id].visitante"
-                class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946] transition"
-              />
-              <button
-                (click)="guardarPrediccion(partido._id)"
-                class="bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-4 py-2 rounded-lg text-sm transition">
-                Guardar
-              </button>
-              @if (mensajes[partido._id]) {
-                <span class="text-emerald-400 text-sm font-medium">{{ mensajes[partido._id] }}</span>
-              }
-            </div>
-          }
+   @if (!partido.finalizado && !jornandaCerrada()) {
+  <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+
+    <!-- Texto -->
+    <span class="text-gray-400 text-sm whitespace-nowrap">
+      Tu predicción
+    </span>
+
+    <!-- Inputs compactos -->
+    <div class="flex items-center gap-2">
+      <input
+        type="text"
+        [(ngModel)]="inputsPrediccion[partido._id].local"
+        class="w-12 bg-white/10 border border-white/20 text-white text-center rounded-md py-1 focus:outline-none focus:border-[#e63946] transition"
+      />
+
+      <span class="text-gray-500 font-bold">-</span>
+
+      <input
+        type="text"
+        [(ngModel)]="inputsPrediccion[partido._id].visitante"
+        class="w-12 bg-white/10 border border-white/20 text-white text-center rounded-md py-1 focus:outline-none focus:border-[#e63946] transition"
+      />
+    </div>
+
+    <!-- Botón compacto -->
+    <button
+      (click)="guardarPrediccion(partido._id)"
+      class="bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-3 py-1 rounded-md text-xs transition">
+      Guardar
+    </button>
+
+    @if (mensajes[partido._id]) {
+      <span class="text-emerald-400 text-xs font-medium whitespace-nowrap">
+        {{ mensajes[partido._id] }}
+      </span>
+    }
+
+  </div>
+}
 
           <!-- Predicción cerrada -->
           @if (jornandaCerrada() && inputsPrediccion[partido._id]) {
