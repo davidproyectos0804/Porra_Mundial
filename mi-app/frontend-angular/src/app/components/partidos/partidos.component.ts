@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule, FormsModule],
   templateUrl: './partidos.component.html'
 })
-export class PartidosComponent implements OnInit {
+export class PartidosComponent implements OnInit, OnDestroy {
 
   fases = signal<any[]>([]);
   partidos = signal<any[]>([]);
@@ -40,12 +40,15 @@ export class PartidosComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
+  tiempoRestante = signal<string>('');
+  private intervalo: any;
 
   ngOnInit(): void {
     this.usuario = this.authService.getUsuario();
     this.cargarFases();
+    this.iniciarContador();
   }
-
+  
   cargarFases(): void {
     this.partidoService.getFases().subscribe({
       next: (fases) => {
@@ -63,6 +66,34 @@ export class PartidosComponent implements OnInit {
       },
       error: () => this.router.navigate(['/login'])
     });
+  }
+  iniciarContador(): void {
+    const fechaInicio = new Date('2026-06-11T21:00:00');
+
+    const calcular = () => {
+      const ahora = new Date();
+      const diff = fechaInicio.getTime() - ahora.getTime();
+
+      if (diff <= 0) {
+        this.tiempoRestante.set('');
+        clearInterval(this.intervalo);
+        return;
+      }
+
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+
+      this.tiempoRestante.set(`${dias}d ${horas}h ${minutos}m ${segundos}s`);
+    };
+
+    calcular();
+    this.intervalo = setInterval(calcular, 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalo) clearInterval(this.intervalo);
   }
 
   cargarPartidosYPredicciones(faseId: string): void {
@@ -120,6 +151,7 @@ export class PartidosComponent implements OnInit {
     });
 
   }
+  
 
   jornadadAnterior(): void {
 
@@ -303,6 +335,7 @@ export class PartidosComponent implements OnInit {
       .some(p => p.partido === partidoId);
 
   }
+  
   scrollArriba(): void {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }

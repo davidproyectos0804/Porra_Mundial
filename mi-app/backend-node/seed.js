@@ -89,14 +89,14 @@ const seedData = async () => {
 
     // Crear las fases
     const fases = await Fase.insertMany([
-      { nombre: 'Jornada 1 Fase de Grupos', fechaLimite: new Date('2026-06-11T20:00:00') },
-      { nombre: 'Jornada 2 Fase de Grupos', fechaLimite: new Date('2026-06-18T17:00:00') },
-      { nombre: 'Jornada 3 Fase de Grupos', fechaLimite: new Date('2026-06-24T20:00:00') },
-      { nombre: 'Dieciseisavos',            fechaLimite: new Date('2026-07-01T00:00:00') },
-      { nombre: 'Octavos',                  fechaLimite: new Date('2026-07-05T00:00:00') },
-      { nombre: 'Cuartos',                  fechaLimite: new Date('2026-07-09T00:00:00') },
-      { nombre: 'Semifinales',              fechaLimite: new Date('2026-07-13T00:00:00') },
-      { nombre: 'Final',                    fechaLimite: new Date('2026-07-18T00:00:00') },
+      { nombre: 'Jornada 1 Fase de Grupos', fechaLimite: new Date('2026-06-11T21:00:00') },
+      { nombre: 'Jornada 2 Fase de Grupos', fechaLimite: new Date('2026-06-18T18:00:00') },
+      { nombre: 'Jornada 3 Fase de Grupos', fechaLimite: new Date('2026-06-24T21:00:00') },
+      { nombre: 'Dieciseisavos',            fechaLimite: new Date('2026-06-28T21:00:00') },
+      { nombre: 'Octavos',                  fechaLimite: new Date('2026-07-04T19:00:00') },
+      { nombre: 'Cuartos',                  fechaLimite: new Date('2026-07-09T22:00:00') },
+      { nombre: 'Semifinales',              fechaLimite: new Date('2026-07-14T21:00:00') },
+      { nombre: 'Final',                    fechaLimite: new Date('2026-07-19T21:00:00') },
     ]);
     console.log('✅ Fases creadas');
 
