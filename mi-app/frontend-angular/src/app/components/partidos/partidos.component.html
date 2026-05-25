@@ -85,7 +85,6 @@
           </div>
 
           <!-- Equipos -->
-
           <div class="flex items-start justify-between mt-3">
             <div class="flex items-start gap-3 flex-1 min-w-0">
               <img [src]="getBanderaUrl(partido.equipoLocal.bandera)" [alt]="partido.equipoLocal.nombre" class="w-10 h-auto rounded shadow mt-0.5 shrink-0" />
@@ -107,45 +106,38 @@
               <img [src]="getBanderaUrl(partido.equipoVisitante.bandera)" [alt]="partido.equipoVisitante.nombre" class="w-10 h-auto rounded shadow mt-0.5 shrink-0" />
               <span class="text-white font-bold text-xs leading-tight text-right">{{ partido.equipoVisitante.nombre }}</span>
             </div>
-          </div>  
+          </div>
 
           @if (!partido.finalizado && !jornandaCerrada()) {
             <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
-
-              <span class="text-gray-400 text-sm whitespace-nowrap">
-                Tu predicción
-              </span>
-
+              <span class="text-gray-400 text-sm whitespace-nowrap">Tu predicción</span>
               <div class="flex items-center gap-2">
                 <input
                   type="text"
                   inputmode="numeric"
+                  placeholder="0"
                   [(ngModel)]="inputsPrediccion[partido._id].local"
-                  class="w-12 bg-white/10 border border-white/20 text-white text-center rounded-md py-1 focus:outline-none focus:border-[#e63946] transition"
+                  class="w-12 bg-white/10 border border-white/20 text-white placeholder-gray-600 text-center rounded-md py-1 focus:outline-none focus:border-[#e63946] transition"
                 />
-
                 <span class="text-gray-500 font-bold">-</span>
-
                 <input
                   type="text"
                   inputmode="numeric"
+                  placeholder="0"
                   [(ngModel)]="inputsPrediccion[partido._id].visitante"
-                  class="w-12 bg-white/10 border border-white/20 text-white text-center rounded-md py-1 focus:outline-none focus:border-[#e63946] transition"
+                  class="w-12 bg-white/10 border border-white/20 text-white placeholder-gray-600 text-center rounded-md py-1 focus:outline-none focus:border-[#e63946] transition"
                 />
               </div>
-
               <button
                 (click)="guardarPrediccion(partido._id)"
                 class="bg-[#e63946] hover:bg-[#c1121f] text-white font-bold px-3 py-1 rounded-md text-xs transition">
                 Guardar
               </button>
-
               @if (mensajes[partido._id]) {
                 <span class="text-emerald-400 text-xs font-medium whitespace-nowrap">
                   {{ mensajes[partido._id] }}
                 </span>
               }
-
             </div>
           }
 

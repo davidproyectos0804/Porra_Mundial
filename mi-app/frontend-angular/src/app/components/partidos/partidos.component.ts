@@ -19,19 +19,12 @@ export class PartidosComponent implements OnInit, OnDestroy {
   faseActual = signal<any>(null);
   faseIndex = signal<number>(0);
   cargando = signal<boolean>(true);
+  tiempoRestante = signal<string>('');
+  private intervalo: any;
 
   usuario: any;
 
-  window = window;
-
-  // Inputs por partido
-  inputsPrediccion: {
-    [partidoId: string]: {
-      local: number,
-      visitante: number
-    }
-  } = {};
-
+  inputsPrediccion: { [partidoId: string]: { local: any, visitante: any } } = {};
   mensajes: { [partidoId: string]: string } = {};
 
   constructor(
@@ -40,33 +33,17 @@ export class PartidosComponent implements OnInit, OnDestroy {
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
-  tiempoRestante = signal<string>('');
-  private intervalo: any;
 
   ngOnInit(): void {
     this.usuario = this.authService.getUsuario();
     this.cargarFases();
     this.iniciarContador();
   }
-  
-  cargarFases(): void {
-    this.partidoService.getFases().subscribe({
-      next: (fases) => {
 
-        const fasesGrupos = fases.filter(f =>
-          f.nombre.includes('Fase de Grupos')
-        );
-
-        this.fases.set(fasesGrupos);
-
-        if (fasesGrupos.length > 0) {
-          this.faseActual.set(fasesGrupos[0]);
-          this.cargarPartidosYPredicciones(fasesGrupos[0]._id);
-        }
-      },
-      error: () => this.router.navigate(['/login'])
-    });
+  ngOnDestroy(): void {
+    if (this.intervalo) clearInterval(this.intervalo);
   }
+
   iniciarContador(): void {
     const fechaInicio = new Date('2026-06-11T21:00:00');
 
@@ -92,226 +69,155 @@ export class PartidosComponent implements OnInit, OnDestroy {
     this.intervalo = setInterval(calcular, 1000);
   }
 
-  ngOnDestroy(): void {
-    if (this.intervalo) clearInterval(this.intervalo);
+  cargarFases(): void {
+    this.partidoService.getFases().subscribe({
+      next: (fases) => {
+        const fasesGrupos = fases.filter(f => f.nombre.includes('Fase de Grupos'));
+        this.fases.set(fasesGrupos);
+        if (fasesGrupos.length > 0) {
+          this.faseActual.set(fasesGrupos[0]);
+          this.cargarPartidosYPredicciones(fasesGrupos[0]._id);
+        }
+      },
+      error: () => this.router.navigate(['/login'])
+    });
   }
 
   cargarPartidosYPredicciones(faseId: string): void {
-
     this.cargando.set(true);
-
     this.inputsPrediccion = {};
     this.mensajes = {};
 
     this.partidoService.getPartidosPorFase(faseId).subscribe({
-
       next: (partidos) => {
-
         this.partidos.set(partidos);
 
+        // Inputs vacíos por defecto
         partidos.forEach(p => {
-          this.inputsPrediccion[p._id] = {
-            local: 0,
-            visitante: 0
-          };
+          this.inputsPrediccion[p._id] = { local: '', visitante: '' };
         });
 
-        // cargar predicciones
         this.partidoService.getMisPredicciones(faseId).subscribe({
-
           next: (predicciones) => {
-
             this.predicciones.set(predicciones);
 
-            // rellenar inputs
+            // Rellenar con predicciones existentes
             predicciones.forEach(p => {
-
               this.inputsPrediccion[p.partido] = {
                 local: p.golesLocalPredicho,
                 visitante: p.golesVisitantePredicho
               };
-
             });
 
             this.cargando.set(false);
           },
-
-          error: () => {
-            this.cargando.set(false);
-          }
-
+          error: () => this.cargando.set(false)
         });
-
       },
-
-      error: () => {
-        this.cargando.set(false);
-      }
-
+      error: () => this.cargando.set(false)
     });
-
   }
-  
 
   jornadadAnterior(): void {
-
     const index = this.faseIndex();
-
     if (index > 0) {
-
       const nuevoIndex = index - 1;
-
       this.faseIndex.set(nuevoIndex);
       this.faseActual.set(this.fases()[nuevoIndex]);
-
-      this.cargarPartidosYPredicciones(
-        this.fases()[nuevoIndex]._id
-      );
-
+      this.cargarPartidosYPredicciones(this.fases()[nuevoIndex]._id);
     }
-
   }
 
   jornadaSiguiente(): void {
-
     const index = this.faseIndex();
-
     if (index < this.fases().length - 1) {
-
       const nuevoIndex = index + 1;
-
       this.faseIndex.set(nuevoIndex);
       this.faseActual.set(this.fases()[nuevoIndex]);
-
-      this.cargarPartidosYPredicciones(
-        this.fases()[nuevoIndex]._id
-      );
-
+      this.cargarPartidosYPredicciones(this.fases()[nuevoIndex]._id);
     }
-
   }
 
   guardarPrediccion(partidoId: string): void {
-
     const input = this.inputsPrediccion[partidoId];
-
     if (input === undefined) return;
+
+    // Validar vacíos
+    if (input.local === '' || input.visitante === '') {
+      this.mensajes[partidoId] = '❌ Introduce ambos marcadores';
+      this.cdr.detectChanges();
+      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
+      return;
+    }
+
+    // Validar formato (sin ceros delante)
+    if (
+        !/^(0|[1-9]\d*)$/.test(String(input.local)) ||
+        !/^(0|[1-9]\d*)$/.test(String(input.visitante))
+      ) {
+        this.mensajes[partidoId] = '❌ No se permiten ceros a la izquierda';
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.mensajes[partidoId] = '';
+          this.cdr.detectChanges();
+        }, 3000);
+        return;
+      }
 
     const local = Number(input.local);
     const visitante = Number(input.visitante);
 
-    // Validaciones
-    if (isNaN(local) || isNaN(visitante)) {
-
-      this.mensajes[partidoId] =
-        '❌ Solo se permiten números';
-
+    if (local < 0 || visitante < 0) {
+      this.mensajes[partidoId] = '❌ Los goles no pueden ser negativos';
       this.cdr.detectChanges();
-
-      setTimeout(() => {
-        this.mensajes[partidoId] = '';
-        this.cdr.detectChanges();
-      }, 3000);
-
+      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
       return;
     }
 
-    if (local < 0 || visitante < 0) {
-
-      this.mensajes[partidoId] =
-        '❌ Los goles no pueden ser negativos';
-
+    if (local > 10 || visitante > 10) {
+      this.mensajes[partidoId] = '❌ Máximo 10 goles por equipo';
       this.cdr.detectChanges();
-
-      setTimeout(() => {
-        this.mensajes[partidoId] = '';
-        this.cdr.detectChanges();
-      }, 3000);
-
+      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
       return;
     }
 
     if (!Number.isInteger(local) || !Number.isInteger(visitante)) {
-
-      this.mensajes[partidoId] =
-        '❌ Solo se permiten números enteros';
-
+      this.mensajes[partidoId] = '❌ Solo se permiten números enteros';
       this.cdr.detectChanges();
-
-      setTimeout(() => {
-        this.mensajes[partidoId] = '';
-        this.cdr.detectChanges();
-      }, 3000);
-
+      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
       return;
     }
 
-    this.partidoService
-      .guardarPrediccion(partidoId, local, visitante)
-      .subscribe({
+    this.partidoService.guardarPrediccion(partidoId, local, visitante).subscribe({
+      next: () => {
+        const actuales = this.predicciones();
+        const nuevas = actuales.filter(p => p.partido !== partidoId);
+        this.predicciones.set([
+          ...nuevas,
+          {
+            partido: partidoId,
+            golesLocalPredicho: local,
+            golesVisitantePredicho: visitante,
+            puntosObtenidos: null
+          }
+        ]);
 
-        next: () => {
-
-          // 🔥 actualizar signal instantáneamente
-          const actuales = this.predicciones();
-
-          const nuevas = actuales.filter(
-            p => p.partido !== partidoId
-          );
-
-          this.predicciones.set([
-            ...nuevas,
-            {
-              partido: partidoId,
-              golesLocalPredicho: local,
-              golesVisitantePredicho: visitante,
-              puntosObtenidos: null
-            }
-          ]);
-
-          this.mensajes[partidoId] = '✅ Guardado';
-
-          this.cdr.detectChanges();
-
-          setTimeout(() => {
-
-            this.mensajes[partidoId] = '';
-
-            this.cdr.detectChanges();
-
-          }, 1000);
-
-        },
-
-        error: (err) => {
-
-          this.mensajes[partidoId] =
-            '❌ ' + (err.error?.message || 'Error');
-
-          this.cdr.detectChanges();
-
-          setTimeout(() => {
-
-            this.mensajes[partidoId] = '';
-
-            this.cdr.detectChanges();
-
-          }, 3000);
-
-        }
-
-      });
-
+        this.mensajes[partidoId] = '✅ Guardado';
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 1000);
+      },
+      error: (err) => {
+        this.mensajes[partidoId] = '❌ ' + (err.error?.message || 'Error');
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
+      }
+    });
   }
 
   jornandaCerrada(): boolean {
-
     const fase = this.faseActual();
-
     if (!fase) return false;
-
     return new Date() > new Date(fase.fechaLimite);
-
   }
 
   getBanderaUrl(codigo: string): string {
@@ -319,32 +225,20 @@ export class PartidosComponent implements OnInit, OnDestroy {
   }
 
   getPuntosPartido(partidoId: string): number | null {
-
-    const prediccion = this.predicciones()
-      .find(p => p.partido === partidoId);
-
-    return prediccion
-      ? prediccion.puntosObtenidos
-      : null;
-
+    const prediccion = this.predicciones().find(p => p.partido === partidoId);
+    return prediccion ? prediccion.puntosObtenidos : null;
   }
 
   yaPredicho(partidoId: string): boolean {
-
-    return this.predicciones()
-      .some(p => p.partido === partidoId);
-
+    return this.predicciones().some(p => p.partido === partidoId);
   }
-  
+
   scrollArriba(): void {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-  logout(): void {
-
-    this.authService.logout();
-
-    this.router.navigate(['/login']);
-
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }
