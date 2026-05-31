@@ -105,4 +105,11 @@ export class AuthService {
       tap((res: any) => this.guardarSesion(res))
     );
   }
+  esPrimeraVez(): boolean {
+    return !localStorage.getItem('yaVioReglas');
+  }
+
+  marcarReglasComoVistas(): void {
+    localStorage.setItem('yaVioReglas', 'true');
+  }
 }
