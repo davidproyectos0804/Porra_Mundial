@@ -214,7 +214,7 @@ export class PartidosComponent implements OnInit, OnDestroy {
     });
   }
 
-  jornandaCerrada(): boolean {
+  jornadaCerrada(): boolean {
     const fase = this.faseActual();
     if (!fase) return false;
     return new Date() > new Date(fase.fechaLimite);

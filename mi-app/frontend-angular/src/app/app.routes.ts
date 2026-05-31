@@ -14,6 +14,7 @@ export const routes: Routes = [
       { path: 'partidos', loadComponent: () => import('./components/partidos/partidos.component').then(m => m.PartidosComponent) },
       { path: 'ranking', loadComponent: () => import('./components/ranking/ranking.component').then(m => m.RankingComponent) },
       { path: 'predicciones-especiales', loadComponent: () => import('./components/predicciones-especiales/predicciones-especiales.component').then(m => m.PrediccionesEspecialesComponent) },
+      { path: 'reglas', loadComponent: () => import('./components/reglas/reglas.component').then(m => m.ReglasComponent) },
       { path: 'admin', loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent), canActivate: [adminGuard] },
     ]
   },

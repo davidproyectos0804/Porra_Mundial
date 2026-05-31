@@ -36,6 +36,11 @@
            ESPECIALES
            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-emerald-400 group-hover:w-full transition-all duration-300 rounded-full"></span>
         </a>
+        <a routerLink="/reglas" routerLinkActive="!text-white"
+           class="relative px-5 py-4 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
+           REGLAS
+           <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-blue-400 group-hover:w-full transition-all duration-300 rounded-full"></span>
+        </a>
         @if (usuario?.rol === 'admin') {
           <a routerLink="/admin" routerLinkActive="!text-white"
              class="relative px-5 py-4 text-sm font-semibold text-gray-400 hover:text-white transition-colors duration-200 group">
@@ -167,6 +172,10 @@
           <a routerLink="/predicciones-especiales" (click)="menuAbierto.set(false)"
             class="text-gray-400 hover:text-white py-2 text-sm font-semibold uppercase tracking-wider transition">
             Especiales
+          </a>
+          <a routerLink="/reglas" (click)="menuAbierto.set(false)"
+            class="text-gray-400 hover:text-white py-2 text-sm font-semibold uppercase tracking-wider transition">
+            Reglas
           </a>
           @if (usuario?.rol === 'admin') {
             <a routerLink="/admin" (click)="menuAbierto.set(false)"
