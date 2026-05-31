@@ -11,7 +11,24 @@
   @if (cargando()) {
     <p class="text-gray-400 text-center py-12">Cargando ranking...</p>
   }
+  <!-- Participantes -->
+@if (!cargando()) {
+  <div class="fixed top-24 right-6 z-30">
+    <div class="bg-[#0a1628] border border-white/10 rounded-xl overflow-hidden min-w-[140px]">
+      <div class="h-1 bg-[#e63946]"></div>
 
+      <div class="px-5 py-4 text-center">
+        <div class="text-3xl font-black text-white leading-none">
+          {{ total() }}
+        </div>
+
+        <div class="mt-2 text-[10px] uppercase tracking-[0.25em] text-gray-500">
+          Participantes
+        </div>
+      </div>
+    </div>
+  </div>
+}
   @if (!cargando()) {
 
     <!-- Tabla -->

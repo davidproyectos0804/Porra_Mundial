@@ -15,6 +15,7 @@ export class RankingComponent implements OnInit {
 
   ranking = signal<any[]>([]);
   cargando = signal<boolean>(true);
+  total = signal<number>(0);
   usuario: any;
   miPosicion = signal<any>(null);
 
@@ -34,12 +35,13 @@ export class RankingComponent implements OnInit {
       'Authorization': `Bearer ${this.authService.getToken()}`
     });
 
-    this.http.get<any[]>(`${environment.apiUrl}/ranking`, { headers }).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/ranking`, { headers }).subscribe({
       next: (data) => {
-        this.ranking.set(data);
-        const index = data.findIndex(u => u._id === this.usuario?.id);
+        this.ranking.set(data.ranking);
+        this.total.set(data.total);
+        const index = data.ranking.findIndex((u: any) => u._id === this.usuario?.id);
         if (index >= 0) {
-          this.miPosicion.set({ ...data[index], posicion: index + 1 });
+          this.miPosicion.set({ ...data.ranking[index], posicion: index + 1 });
         }
         this.cargando.set(false);
       },

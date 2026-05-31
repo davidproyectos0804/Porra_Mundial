@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-reglas',
@@ -7,7 +8,8 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './reglas.component.html',
 })
-export class ReglasComponent {
+export class ReglasComponent implements OnInit {
+
   prediccionesEspeciales = [
     { nombre: '🏆 Ganador del mundial' },
     { nombre: '🥈 Subcampeón' },
@@ -22,4 +24,10 @@ export class ReglasComponent {
     { nombre: '🎯 Máximo asistente' },
     { nombre: '🌟 Mejor jugador joven sub-21' },
   ];
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.authService.marcarReglasComoVistas();
+  }
 }

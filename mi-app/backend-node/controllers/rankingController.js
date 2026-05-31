@@ -6,7 +6,10 @@ const getRanking = async (req, res) => {
       .select('nombre puntosTotales fotoPerfil')
       .sort({ puntosTotales: -1 });
 
-    res.json(usuarios);
+    res.json({
+      total: usuarios.length,
+      ranking: usuarios
+    });
 
   } catch (error) {
     res.status(500).json({ message: 'Error obteniendo ranking', error: error.message });

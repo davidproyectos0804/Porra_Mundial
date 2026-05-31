@@ -56,13 +56,15 @@
     <div class="flex flex-col gap-3">
       @for (partido of partidos(); track partido._id) {
 
-       <div [class]="partido.finalizado && getPuntosPartido(partido._id) !== null
-  ? getPuntosPartido(partido._id) === 500
-    ? 'bg-emerald-500/15 border border-emerald-500/50 rounded-2xl p-5 transition'
-    : getPuntosPartido(partido._id) === 200
-    ? 'bg-yellow-500/15 border border-yellow-500/50 rounded-2xl p-5 transition'
-    : 'bg-red-500/15 border border-red-500/50 rounded-2xl p-5 transition'
-  : 'bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition'">
+     <div [class]="partido.finalizado && getPuntosPartido(partido._id) !== null
+      ? getPuntosPartido(partido._id) === 500
+        ? 'bg-emerald-500/15 border border-emerald-500/50 rounded-2xl p-5 transition'
+        : getPuntosPartido(partido._id) === 200
+        ? 'bg-yellow-500/15 border border-yellow-500/50 rounded-2xl p-5 transition'
+        : 'bg-red-500/15 border border-red-500/50 rounded-2xl p-5 transition'
+      : jornadaCerrada() && !yaPredicho(partido._id)
+      ? 'bg-white/3 border border-white/5 rounded-2xl p-5 opacity-50 transition'
+      : 'bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition'">
 
           <!-- Fecha + estado predicción -->
           <div class="flex items-center justify-between">

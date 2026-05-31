@@ -46,12 +46,12 @@ export class RegistroComponent implements OnInit {
   handleGoogleResponse(response: any): void {
     this.authService.googleLogin(response.credential).subscribe({
       next: (res) => {
-        if (res.usuario.rol === 'admin') {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/partidos']);
-        }
-      },
+      if (res.usuario.rol === 'admin') {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/reglas']);
+      }
+    },  
       error: (err) => {
         this.error = err.error?.message || 'Error con Google';
         this.cdr.detectChanges();
@@ -94,14 +94,15 @@ export class RegistroComponent implements OnInit {
       email: this.datos.email,
       password: this.datos.password
     }).subscribe({
-      next: (res) => {
-        if (res.usuario.rol === 'admin') {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/partidos']);
-        }
-        this.cargando = false;
-      },
+     next: (res) => {
+      if (res.usuario.rol === 'admin') {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/reglas']);
+      }
+      this.cargando = false;
+    },
+
       error: (err) => {
         this.error = err.error?.message || 'Error al registrarse';
         this.cargando = false;
