@@ -16,19 +16,11 @@ export class PrediccionesEspecialesComponent implements OnInit {
   equipos = signal<any[]>([]);
   misPredicciones = signal<any[]>([]);
   cargando = signal<boolean>(true);
+  tiposResueltos = signal<string[]>([]);
+  resultadosGlobales = signal<any[]>([]);
   cerrado = signal<boolean>(false);
   pestanaActiva = signal<'equipos' | 'jugadores'>('equipos');
   mensajes: { [tipo: string]: string } = {};
-
-  tiposJugador = [
-  { key: 'Goleador', label: '⚽ Goleador del mundial' },
-  { key: 'MVP del mundial', label: '⭐ MVP del mundial' },
-  { key: 'Mejor portero', label: '👟 Mejor portero' },
-  { key: 'Maximo asistente', label: '🎯 Máximo asistente' },
-  { key: 'Mejor jugador joven', label: '🌟 Mejor jugador joven sub-21' },
-];
-
-  jugadores = signal<any[]>([]);
 
   tiposEquipo = [
     { key: 'Ganador del mundial', label: '🏆 Ganador del mundial' },
@@ -40,7 +32,18 @@ export class PrediccionesEspecialesComponent implements OnInit {
     { key: 'Equipo sorpresa', label: '🔥 Equipo sorpresa' },
   ];
 
+  tiposJugador = [
+    { key: 'Goleador', label: '⚽ Goleador del mundial', soloPortero: false, soloSub21: false },
+    { key: 'MVP del mundial', label: '⭐ MVP del mundial', soloPortero: false, soloSub21: false },
+    { key: 'Mejor portero', label: '👟 Mejor portero', soloPortero: true, soloSub21: false },
+    { key: 'Maximo asistente', label: '🎯 Máximo asistente', soloPortero: false, soloSub21: false },
+    { key: 'Mejor jugador joven', label: '🌟 Mejor jugador joven sub-21', soloPortero: false, soloSub21: true }
+  ];
+
   selecciones: { [tipo: string]: string } = {};
+  equipoSeleccionado: { [tipo: string]: string } = {};
+  jugadoresPorTipo: { [tipo: string]: any[] } = {};
+  cargandoJugadores: { [tipo: string]: boolean } = {};
 
   constructor(
     private http: HttpClient,
@@ -58,15 +61,21 @@ export class PrediccionesEspecialesComponent implements OnInit {
     });
   }
 
-  cargarDatos(): void {
-    // Cargar equipos
+  isPrediccionResuelta(tipo: string): boolean {
+    return this.tiposResueltos().includes(tipo);
+  }
+
+  getResultadoResuelto(tipo: string): any {
+    return this.resultadosGlobales().find(r => r.tipo === tipo);
+  }
+
+cargarDatos(): void {
     this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/equipos`, {
       headers: this.getHeaders()
     }).subscribe({
       next: (equipos) => {
         this.equipos.set(equipos);
 
-        // Comprobar si está cerrado usando la fechaLimite de Jornada 1
         this.http.get<any[]>(`${environment.apiUrl}/partidos/fases`, {
           headers: this.getHeaders()
         }).subscribe({
@@ -76,17 +85,51 @@ export class PrediccionesEspecialesComponent implements OnInit {
               this.cerrado.set(new Date() > new Date(jornada1.fechaLimite));
             }
 
-            // Cargar mis predicciones
-            this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales`, {
+            this.http.get<any>(`${environment.apiUrl}/predicciones-especiales`, {
               headers: this.getHeaders()
             }).subscribe({
-              next: (predicciones) => {
+              next: (res) => {
+                const predicciones: any[] = Array.isArray(res) ? res : (res.predicciones || []);
+                const tiposResueltos: string[] = Array.isArray(res) ? [] : (res.tiposResueltos || []);
+
                 this.misPredicciones.set(predicciones);
-                predicciones.forEach(p => {
+                this.tiposResueltos.set(tiposResueltos);
+
+                predicciones.forEach((p: any) => {
                   this.selecciones[p.tipo] = p.valorPredicho?._id || p.valorPredicho;
+
+                  if (p.tipoValor === 'Jugador' && p.valorPredicho?.equipo?._id) {
+                    this.equipoSeleccionado[p.tipo] = p.valorPredicho.equipo._id;
+
+                    const tipoConfig = this.tiposJugador.find(t => t.key === p.tipo);
+                    if (!tipoConfig) return;
+
+                    let url = `${environment.apiUrl}/predicciones-especiales/jugadores?equipoId=${p.valorPredicho.equipo._id}`;
+                    if (tipoConfig.soloPortero) url += '&posicion=Portero';
+                    if (tipoConfig.soloSub21) url += '&soloSub21=true';
+
+                    this.http.get<any[]>(url, { headers: this.getHeaders() }).subscribe({
+                      next: (jugadores) => {
+                        this.jugadoresPorTipo[p.tipo] = jugadores;
+                        this.cdr.detectChanges();
+                      }
+                    });
+                  }
                 });
-                this.cargando.set(false);
-                this.cdr.detectChanges();
+
+                this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/resultados`, {
+                  headers: this.getHeaders()
+                }).subscribe({
+                  next: (resultados) => {
+                    this.resultadosGlobales.set(resultados);
+                    this.cargando.set(false);
+                    this.cdr.detectChanges();
+                  },
+                  error: () => {
+                    this.cargando.set(false);
+                  }
+                });
+
               },
               error: () => this.cargando.set(false)
             });
@@ -98,12 +141,38 @@ export class PrediccionesEspecialesComponent implements OnInit {
     });
   }
 
+  cargarJugadoresPorTipo(tipo: string): void {
+    const equipoId = this.equipoSeleccionado[tipo];
+    if (!equipoId) return;
+
+    const tipoConfig = this.tiposJugador.find(t => t.key === tipo);
+    if (!tipoConfig) return;
+
+    this.cargandoJugadores[tipo] = true;
+
+    let url = `${environment.apiUrl}/predicciones-especiales/jugadores?equipoId=${equipoId}`;
+    if (tipoConfig.soloPortero) url += '&posicion=Portero';
+    if (tipoConfig.soloSub21) url += '&soloSub21=true';
+
+    this.http.get<any[]>(url, { headers: this.getHeaders() }).subscribe({
+      next: (jugadores) => {
+        this.jugadoresPorTipo[tipo] = jugadores;
+        delete this.selecciones[tipo];
+        this.cargandoJugadores[tipo] = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoJugadores[tipo] = false;
+      }
+    });
+  }
+
   guardarPrediccion(tipo: string): void {
     if (this.cerrado()) return;
 
     const valorPredicho = this.selecciones[tipo];
     if (!valorPredicho) {
-      this.mensajes[tipo] = '❌ Selecciona un equipo';
+      this.mensajes[tipo] = '❌ Selecciona una opción';
       this.cdr.detectChanges();
       setTimeout(() => { this.mensajes[tipo] = ''; this.cdr.detectChanges(); }, 3000);
       return;
@@ -114,21 +183,20 @@ export class PrediccionesEspecialesComponent implements OnInit {
       valorPredicho
     }, { headers: this.getHeaders() }).subscribe({
       next: () => {
-  this.mensajes[tipo] = '✅ Guardado';
-  
-  // Actualizar misPredicciones para que se vea PREDICHO sin recargar
-  const prediccionesActuales = this.misPredicciones();
-  const index = prediccionesActuales.findIndex(p => p.tipo === tipo);
-  if (index >= 0) {
-    prediccionesActuales[index].valorPredicho = { _id: this.selecciones[tipo] };
-    this.misPredicciones.set([...prediccionesActuales]);
-  } else {
-    this.misPredicciones.set([...prediccionesActuales, { tipo, valorPredicho: { _id: this.selecciones[tipo] } }]);
-  }
-  
-  this.cdr.detectChanges();
-  setTimeout(() => { this.mensajes[tipo] = ''; this.cdr.detectChanges(); }, 1000);
-},
+        this.mensajes[tipo] = '✅ Guardado';
+
+        const prediccionesActuales = this.misPredicciones();
+        const index = prediccionesActuales.findIndex(p => p.tipo === tipo);
+        if (index >= 0) {
+          prediccionesActuales[index].valorPredicho = { _id: this.selecciones[tipo] };
+          this.misPredicciones.set([...prediccionesActuales]);
+        } else {
+          this.misPredicciones.set([...prediccionesActuales, { tipo, valorPredicho: { _id: this.selecciones[tipo] } }]);
+        }
+
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensajes[tipo] = ''; this.cdr.detectChanges(); }, 1000);
+      },
       error: (err) => {
         this.mensajes[tipo] = '❌ ' + (err.error?.message || 'Error');
         this.cdr.detectChanges();
@@ -144,6 +212,10 @@ export class PrediccionesEspecialesComponent implements OnInit {
       );
     }
     return this.equipos();
+  }
+
+  getJugadoresPorTipo(tipo: string): any[] {
+    return this.jugadoresPorTipo[tipo] || [];
   }
 
   getBanderaUrl(codigo: string): string {

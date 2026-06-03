@@ -23,8 +23,17 @@ export class AdminComponent implements OnInit {
 
   inputsResultado: { [partidoId: string]: { local: number, visitante: number } } = {};
   mensajes: { [partidoId: string]: string } = {};
-  resolviendo: { [tipo: string]: boolean } = {};
-  resueltosYa: { [tipo: string]: boolean } = {};
+
+  // Señales para las predicciones especiales
+  resolviendo = signal<{ [tipo: string]: boolean }>({});
+  resueltosYa = signal<{ [tipo: string]: boolean }>({});
+  resultadosEspeciales = signal<{ [tipo: string]: any }>({});
+  mensajesEspeciales = signal<{ [tipo: string]: string }>({});
+  seleccionesResolucion = signal<{ [tipo: string]: string }>({});
+  equipoSeleccionadoResolucion = signal<{ [tipo: string]: string }>({});
+  jugadoresPorTipoResolucion = signal<{ [tipo: string]: any[] }>({});
+  cargandoJugadoresResolucion = signal<{ [tipo: string]: boolean }>({});
+  cargandoResultados = signal<boolean>(true);
 
   tiposPrediccion = [
     { key: 'Ganador del mundial', label: '🏆 Ganador del mundial' },
@@ -36,8 +45,13 @@ export class AdminComponent implements OnInit {
     { key: 'Equipo sorpresa', label: '🔥 Equipo sorpresa' },
   ];
 
-  seleccionesResolucion: { [tipo: string]: string } = {};
-  mensajesEspeciales: { [tipo: string]: string } = {};
+  tiposPrediccionJugador = [
+    { key: 'Goleador', label: '⚽ Goleador del mundial', soloPortero: false, soloSub21: false },
+    { key: 'MVP del mundial', label: '⭐ MVP del mundial', soloPortero: false, soloSub21: false },
+    { key: 'Mejor portero', label: '👟 Mejor portero', soloPortero: true, soloSub21: false },
+    { key: 'Maximo asistente', label: '🎯 Máximo asistente', soloPortero: false, soloSub21: false },
+    { key: 'Mejor jugador joven', label: '🌟 Mejor jugador joven sub-21', soloPortero: false, soloSub21: true }
+  ];
 
   constructor(
     private http: HttpClient,
@@ -48,6 +62,7 @@ export class AdminComponent implements OnInit {
   ngOnInit(): void {
     this.cargarFases();
     this.cargarEquipos();
+    this.cargarResultadosEspeciales();
   }
 
   private getHeaders(): HttpHeaders {
@@ -79,6 +94,26 @@ export class AdminComponent implements OnInit {
     });
   }
 
+  cargarResultadosEspeciales(): void {
+    this.cargandoResultados.set(true);
+    this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/resultados`, {
+      headers: this.getHeaders()
+    }).subscribe({
+      next: (resultados) => {
+        const resueltos: { [tipo: string]: boolean } = {};
+        const resultadosObj: { [tipo: string]: any } = {};
+        resultados.forEach(r => {
+          resultadosObj[r.tipo] = r.valorCorrecto;
+          resueltos[r.tipo] = true;
+        });
+        this.resultadosEspeciales.set(resultadosObj);
+        this.resueltosYa.set(resueltos);
+        this.cargandoResultados.set(false);
+      },
+      error: () => this.cargandoResultados.set(false)
+    });
+  }
+
   cargarPartidos(faseId: string): void {
     this.cargando.set(true);
     this.inputsResultado = {};
@@ -104,6 +139,37 @@ export class AdminComponent implements OnInit {
   cambiarFase(fase: any): void {
     this.faseActual.set(fase);
     this.cargarPartidos(fase._id);
+  }
+
+  cargarJugadoresResolucion(tipo: string): void {
+    const equipoId = this.equipoSeleccionadoResolucion()[tipo];
+    if (!equipoId) return;
+
+    const tipoConfig = this.tiposPrediccionJugador.find(t => t.key === tipo);
+    if (!tipoConfig) return;
+
+    // Actualizar estado de carga
+    this.cargandoJugadoresResolucion.update(v => ({ ...v, [tipo]: true }));
+    // Limpiar selección previa
+    this.seleccionesResolucion.update(v => {
+      const nuevo = { ...v };
+      delete nuevo[tipo];
+      return nuevo;
+    });
+
+    let url = `${environment.apiUrl}/predicciones-especiales/jugadores?equipoId=${equipoId}`;
+    if (tipoConfig.soloPortero) url += '&posicion=Portero';
+    if (tipoConfig.soloSub21) url += '&soloSub21=true';
+
+    this.http.get<any[]>(url, { headers: this.getHeaders() }).subscribe({
+      next: (jugadores) => {
+        this.jugadoresPorTipoResolucion.update(v => ({ ...v, [tipo]: jugadores }));
+        this.cargandoJugadoresResolucion.update(v => ({ ...v, [tipo]: false }));
+      },
+      error: () => {
+        this.cargandoJugadoresResolucion.update(v => ({ ...v, [tipo]: false }));
+      }
+    });
   }
 
   meterResultado(partidoId: string): void {
@@ -145,33 +211,55 @@ export class AdminComponent implements OnInit {
   }
 
   resolverEspecial(tipo: string): void {
-    const valorCorrecto = this.seleccionesResolucion[tipo];
+    const valorCorrecto = this.seleccionesResolucion()[tipo];
     if (!valorCorrecto) {
-      this.mensajesEspeciales[tipo] = '❌ Selecciona el valor correcto';
-      setTimeout(() => this.mensajesEspeciales[tipo] = '', 3000);
+      this.mensajesEspeciales.update(v => ({ ...v, [tipo]: '❌ Selecciona el valor correcto' }));
+      setTimeout(() => this.mensajesEspeciales.update(v => ({ ...v, [tipo]: '' })), 3000);
       return;
     }
 
-    this.resolviendo[tipo] = true;
+    // Activar estado "resolviendo"
+    this.resolviendo.update(v => ({ ...v, [tipo]: true }));
 
     this.http.put(`${environment.apiUrl}/predicciones-especiales/resolver`, {
       tipo,
       valorCorrecto
     }, { headers: this.getHeaders() }).subscribe({
       next: (res: any) => {
-        this.mensajesEspeciales[tipo] = `✅ ${res.message}`;
-        this.resolviendo[tipo] = false;
-        this.resueltosYa[tipo] = true;
-        setTimeout(() => this.mensajesEspeciales[tipo] = '', 4000);
+        this.mensajesEspeciales.update(v => ({ ...v, [tipo]: `✅ ${res.message}` }));
+        this.resolviendo.update(v => ({ ...v, [tipo]: false }));
+        this.resueltosYa.update(v => ({ ...v, [tipo]: true }));
+
+        // Buscar el objeto completo para mostrarlo como resultado
+        const equipoEncontrado = this.equipos().find(e => e._id === valorCorrecto);
+        if (equipoEncontrado) {
+          this.resultadosEspeciales.update(v => ({ ...v, [tipo]: equipoEncontrado }));
+        } else {
+          const jugadores = this.jugadoresPorTipoResolucion()[tipo] || [];
+          const jugadorEncontrado = jugadores.find(j => j._id === valorCorrecto);
+          if (jugadorEncontrado) {
+            this.resultadosEspeciales.update(v => ({ ...v, [tipo]: jugadorEncontrado }));
+          }
+        }
+
+        setTimeout(() => this.mensajesEspeciales.update(v => ({ ...v, [tipo]: '' })), 4000);
       },
       error: (err) => {
-        this.mensajesEspeciales[tipo] = '❌ ' + (err.error?.message || 'Error');
-        this.resolviendo[tipo] = false;
-        setTimeout(() => this.mensajesEspeciales[tipo] = '', 3000);
+        this.mensajesEspeciales.update(v => ({ ...v, [tipo]: '❌ ' + (err.error?.message || 'Error') }));
+        this.resolviendo.update(v => ({ ...v, [tipo]: false }));
+        setTimeout(() => this.mensajesEspeciales.update(v => ({ ...v, [tipo]: '' })), 3000);
       }
     });
   }
 
+actualizarSeleccionResolucion(tipo: string, valor: string): void {
+  this.seleccionesResolucion.update(v => ({ ...v, [tipo]: valor }));
+}
+
+actualizarEquipoSeleccionadoResolucion(tipo: string, equipoId: string): void {
+  this.equipoSeleccionadoResolucion.update(v => ({ ...v, [tipo]: equipoId }));
+  this.cargarJugadoresResolucion(tipo);
+}
   getBanderaUrl(codigo: string): string {
     return `https://flagcdn.com/w40/${codigo}.png`;
   }

@@ -22,7 +22,6 @@ export class ReglasComponent implements OnInit {
     { nombre: '⭐ MVP del mundial' },
     { nombre: '👟 Mejor portero' },
     { nombre: '🎯 Máximo asistente' },
-    { nombre: '🌟 Mejor jugador joven sub-21' },
   ];
 
   constructor(private authService: AuthService) {}

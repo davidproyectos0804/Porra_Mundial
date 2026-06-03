@@ -1,21 +1,27 @@
 const mongoose = require('mongoose');
 
-// Un jugador pertenece a un equipo del mundial
 const jugadorSchema = new mongoose.Schema({
   nombre: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   equipo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Equipo', // Referencia al modelo Equipo
+    ref: 'Equipo',
     required: true
   },
   posicion: {
     type: String,
-    required: true,
-    enum: ['Portero', 'Defensa', 'Centrocampista', 'Delantero']
+    enum: ['Portero', 'Defensa', 'Centrocampista', 'Delantero'],
+    default: null
+  },
+  fechaNacimiento: {
+    type: Date,
+    default: null
   }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('Jugador', jugadorSchema);

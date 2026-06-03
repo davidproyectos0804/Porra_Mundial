@@ -3,7 +3,6 @@
   <!-- Título -->
   <div class="text-center mb-8">
     <p class="text-gray-500 text-xs font-bold uppercase tracking-[0.4em] mb-3">Predicciones</p>
-    <!-- FIX: text-5xl → text-3xl para que no se salga en móvil -->
     <h2 class="text-3xl font-black text-white uppercase tracking-[0.2em]">ESPECIALES</h2>
     <div class="w-32 h-[2px] bg-gradient-to-r from-transparent via-[#e63946] to-transparent mx-auto mt-4"></div>
     <p class="text-gray-400 text-sm mt-4">Cada predicción acertada vale <span class="text-[#ffd700] font-black">1000 pts</span></p>
@@ -46,34 +45,83 @@
         @for (tipo of tiposEquipo; track tipo.key) {
 
           @if (getPrediccionActual(tipo.key)?.puntosObtenidos !== null && getPrediccionActual(tipo.key)?.puntosObtenidos !== undefined) {
-            <!-- Predicción resuelta -->
-            <div [class]="getPrediccionActual(tipo.key)?.puntosObtenidos === 1000
-              ? 'bg-emerald-500/8 border border-emerald-500/40 rounded-2xl p-5'
-              : 'bg-red-500/5 border border-red-500/20 rounded-2xl p-5'">
-              <!-- FIX: header en dos líneas separadas para evitar overflow -->
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
-                <span [class]="getPrediccionActual(tipo.key)?.puntosObtenidos === 1000
-                  ? 'text-[#ffd700] font-black text-sm'
-                  : 'text-red-400 font-black text-sm'">
-                  {{ getPrediccionActual(tipo.key)?.puntosObtenidos === 1000 ? '🎯 1000 pts' : '❌ 0 pts' }}
-                </span>
-              </div>
-              <div class="flex items-center gap-3">
-                @for (equipo of equipos(); track equipo._id) {
-                  @if (equipo._id === (getPrediccionActual(tipo.key)?.valorPredicho?._id || getPrediccionActual(tipo.key)?.valorPredicho)) {
-                    <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow" />
-                    <span class="text-white font-bold">{{ equipo.nombre }}</span>
+            <!-- Predicción resuelta (acierto / fallo) -->
+            @if (getPrediccionActual(tipo.key)?.puntosObtenidos === 1000) {
+              <!-- Acierto -->
+              <div class="bg-emerald-500/8 border border-emerald-500/40 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
+                  <span class="text-[#ffd700] font-black text-sm">🎯 1000 pts</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  @for (equipo of equipos(); track equipo._id) {
+                    @if (equipo._id === (getPrediccionActual(tipo.key)?.valorPredicho?._id || getPrediccionActual(tipo.key)?.valorPredicho)) {
+                      <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow" />
+                      <span class="text-white font-bold">{{ equipo.nombre }}</span>
+                    }
                   }
+                </div>
+              </div>
+            } @else {
+              <!-- Fallo -->
+              <div class="bg-red-500/5 border border-red-500/20 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
+                  <span class="text-red-400 font-black text-sm">❌ 0 pts</span>
+                </div>
+                <div class="mb-3">
+                  <p class="text-gray-400 text-xs font-medium mb-1">Tu predicción:</p>
+                  <div class="flex items-center gap-3">
+                    @for (equipo of equipos(); track equipo._id) {
+                      @if (equipo._id === (getPrediccionActual(tipo.key)?.valorPredicho?._id || getPrediccionActual(tipo.key)?.valorPredicho)) {
+                        <img [src]="getBanderaUrl(equipo.bandera)" class="w-8 h-auto rounded shadow" />
+                        <span class="text-white font-bold text-sm">{{ equipo.nombre }}</span>
+                      }
+                    }
+                  </div>
+                </div>
+                @if (getResultadoResuelto(tipo.key)) {
+                  <div>
+                    <p class="text-gray-400 text-xs font-medium mb-1">Resultado oficial:</p>
+                    <div class="flex items-center gap-3">
+                      <img [src]="getBanderaUrl(getResultadoResuelto(tipo.key).valorCorrecto.bandera)" class="w-8 h-auto rounded shadow" />
+                      <span class="text-white font-bold text-sm">{{ getResultadoResuelto(tipo.key).valorCorrecto.nombre }}</span>
+                    </div>
+                  </div>
                 }
               </div>
+            }
+
+          } @else if ((cerrado() || isPrediccionResuelta(tipo.key)) && !getPrediccionActual(tipo.key)) {
+            <!-- Bloque gris (sin participación) -->
+            <div class="bg-gray-500/8 border border-gray-500/40 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
+                <span class="text-gray-400 font-black text-sm">— Sin participación</span>
+              </div>
+
+              @if (isPrediccionResuelta(tipo.key) && getResultadoResuelto(tipo.key)) {
+                @if (getResultadoResuelto(tipo.key).tipoValor === 'Equipo') {
+                  <div class="flex items-center gap-3">
+                    <img [src]="getBanderaUrl(getResultadoResuelto(tipo.key).valorCorrecto.bandera)" class="w-10 h-auto rounded shadow" />
+                    <span class="text-white font-bold">{{ getResultadoResuelto(tipo.key).valorCorrecto.nombre }}</span>
+                  </div>
+                } @else {
+                  <div>
+                    <p class="text-white font-bold">{{ getResultadoResuelto(tipo.key).valorCorrecto.nombre }}</p>
+                    <p class="text-gray-400 text-sm">{{ getResultadoResuelto(tipo.key).valorCorrecto.equipo?.nombre }}</p>
+                  </div>
+                }
+                <p class="text-gray-500 text-xs mt-2">Resultado oficial</p>
+              } @else {
+                <p class="text-gray-400 text-sm">No realizaste esta predicción</p>
+              }
             </div>
 
           } @else {
-            <!-- Predicción activa -->
+            <!-- Predicción activa (abierta o cerrada pero con predicción guardada) -->
             <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition">
 
-              <!-- FIX: header — título a la izquierda, badges apilados a la derecha en col -->
               <div class="flex items-start justify-between mb-4">
                 <h3 class="text-white font-black text-base flex-1 mr-3">{{ tipo.label }}</h3>
                 <div class="flex flex-col items-end gap-1 shrink-0">
@@ -95,7 +143,6 @@
               </div>
 
               @if (!cerrado()) {
-                <!-- FIX: select ocupa toda la fila, botón + bandera debajo -->
                 <div class="flex flex-col gap-3">
                   <div class="flex items-center gap-3">
                     <select
@@ -121,18 +168,14 @@
                   </button>
                 </div>
               } @else {
-                @if (getPrediccionActual(tipo.key)) {
-                  <div class="flex items-center gap-3">
-                    @for (equipo of equipos(); track equipo._id) {
-                      @if (equipo._id === (getPrediccionActual(tipo.key)?.valorPredicho?._id || getPrediccionActual(tipo.key)?.valorPredicho)) {
-                        <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow" />
-                        <span class="text-white font-bold">{{ equipo.nombre }}</span>
-                      }
+                <div class="flex items-center gap-3">
+                  @for (equipo of equipos(); track equipo._id) {
+                    @if (equipo._id === (getPrediccionActual(tipo.key)?.valorPredicho?._id || getPrediccionActual(tipo.key)?.valorPredicho)) {
+                      <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow" />
+                      <span class="text-white font-bold">{{ equipo.nombre }}</span>
                     }
-                  </div>
-                } @else {
-                  <p class="text-gray-500 text-sm">No hiciste esta predicción</p>
-                }
+                  }
+                </div>
               }
 
               @if (mensajes[tipo.key]) {
@@ -152,19 +195,156 @@
     <!-- Pestaña Jugadores -->
     @if (pestanaActiva() === 'jugadores') {
       <div class="flex flex-col gap-4">
-        <div class="text-center py-8">
-          <p class="text-6xl mb-4">🔒</p>
-          <p class="text-white font-black text-xl mb-2">Disponible el 2 de junio</p>
-          <p class="text-gray-400 text-sm">Cuando se publiquen los planteles oficiales podrás predecir goleador, MVP y más</p>
-        </div>
         @for (tipo of tiposJugador; track tipo.key) {
-          <div class="bg-white/3 border border-white/5 rounded-2xl p-5 mb-3 opacity-40">
-            <div class="flex items-center justify-between">
-              <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
-              <span class="text-[#ffd700] text-xs font-black">1000 PTS</span>
+
+          @if (getPrediccionActual(tipo.key)?.puntosObtenidos !== null && getPrediccionActual(tipo.key)?.puntosObtenidos !== undefined) {
+            <!-- Resuelta -->
+            @if (getPrediccionActual(tipo.key)?.puntosObtenidos === 1000) {
+              <!-- Acierto -->
+              <div class="bg-emerald-500/8 border border-emerald-500/40 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
+                  <span class="text-[#ffd700] font-black text-sm">🎯 1000 pts</span>
+                </div>
+                <p class="text-white font-bold">{{ getPrediccionActual(tipo.key)?.valorPredicho?.nombre }}</p>
+                <p class="text-gray-400 text-sm">{{ getPrediccionActual(tipo.key)?.valorPredicho?.equipo?.nombre }}</p>
+              </div>
+            } @else {
+              <!-- Fallo -->
+              <div class="bg-red-500/5 border border-red-500/20 rounded-2xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
+                  <span class="text-red-400 font-black text-sm">❌ 0 pts</span>
+                </div>
+                <div class="mb-3">
+                  <p class="text-gray-400 text-xs font-medium mb-1">Tu predicción:</p>
+                  <p class="text-white font-bold text-sm">{{ getPrediccionActual(tipo.key)?.valorPredicho?.nombre }}</p>
+                  <p class="text-gray-400 text-xs">{{ getPrediccionActual(tipo.key)?.valorPredicho?.equipo?.nombre }}</p>
+                </div>
+                @if (getResultadoResuelto(tipo.key)) {
+                  <div>
+                    <p class="text-gray-400 text-xs font-medium mb-1">Resultado oficial:</p>
+                    <p class="text-white font-bold text-sm">{{ getResultadoResuelto(tipo.key).valorCorrecto.nombre }}</p>
+                    <p class="text-gray-400 text-xs">{{ getResultadoResuelto(tipo.key).valorCorrecto.equipo?.nombre }}</p>
+                  </div>
+                }
+              </div>
+            }
+
+          } @else if ((cerrado() || isPrediccionResuelta(tipo.key)) && !getPrediccionActual(tipo.key)) {
+            <!-- Bloque gris (sin participación) -->
+            <div class="bg-gray-500/8 border border-gray-500/40 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-white font-black text-base">{{ tipo.label }}</h3>
+                <span class="text-gray-400 font-black text-sm">— Sin participación</span>
+              </div>
+
+              @if (isPrediccionResuelta(tipo.key) && getResultadoResuelto(tipo.key)) {
+                @if (getResultadoResuelto(tipo.key).tipoValor === 'Equipo') {
+                  <div class="flex items-center gap-3">
+                    <img [src]="getBanderaUrl(getResultadoResuelto(tipo.key).valorCorrecto.bandera)" class="w-10 h-auto rounded shadow" />
+                    <span class="text-white font-bold">{{ getResultadoResuelto(tipo.key).valorCorrecto.nombre }}</span>
+                  </div>
+                } @else {
+                  <div>
+                    <p class="text-white font-bold">{{ getResultadoResuelto(tipo.key).valorCorrecto.nombre }}</p>
+                    <p class="text-gray-400 text-sm">{{ getResultadoResuelto(tipo.key).valorCorrecto.equipo?.nombre }}</p>
+                  </div>
+                }
+                <p class="text-gray-500 text-xs mt-2">Resultado oficial</p>
+              } @else {
+                <p class="text-gray-400 text-sm">No realizaste esta predicción</p>
+              }
             </div>
-            <p class="text-gray-500 text-sm mt-2">Próximamente...</p>
-          </div>
+
+          } @else {
+            <!-- Activa (abierta o cerrada con predicción guardada) -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition">
+
+              <div class="flex items-start justify-between mb-4">
+                <h3 class="text-white font-black text-base flex-1 mr-3">{{ tipo.label }}</h3>
+                <div class="flex flex-col items-end gap-1 shrink-0">
+                  <span class="text-[#ffd700] text-xs font-black">1000 PTS</span>
+                  @if (!cerrado()) {
+                    @if (getPrediccionActual(tipo.key)) {
+                      <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                        <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                        PREDICHO
+                      </span>
+                    } @else {
+                      <span class="text-xs font-bold text-[#e63946] flex items-center gap-1 animate-pulse">
+                        <span class="w-2 h-2 bg-[#e63946] rounded-full"></span>
+                        SIN PREDECIR
+                      </span>
+                    }
+                  }
+                </div>
+              </div>
+
+              @if (!cerrado()) {
+                <div class="flex flex-col gap-3">
+                  <div class="flex items-center gap-3">
+                    <select
+                      [(ngModel)]="equipoSeleccionado[tipo.key]"
+                      (ngModelChange)="cargarJugadoresPorTipo(tipo.key)"
+                      class="flex-1 bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#e63946] transition">
+                      <option value="" disabled selected class="bg-[#0a1628]">Selecciona un equipo...</option>
+                      @for (equipo of equipos(); track equipo._id) {
+                        <option [value]="equipo._id" class="bg-[#0a1628]">{{ equipo.nombre }}</option>
+                      }
+                    </select>
+                    @if (equipoSeleccionado[tipo.key]) {
+                      @for (equipo of equipos(); track equipo._id) {
+                        @if (equipo._id === equipoSeleccionado[tipo.key]) {
+                          <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow shrink-0" />
+                        }
+                      }
+                    }
+                  </div>
+
+                  @if (equipoSeleccionado[tipo.key]) {
+                    @if (cargandoJugadores[tipo.key]) {
+                      <p class="text-gray-400 text-sm text-center py-1">Cargando jugadores...</p>
+                    } @else {
+                      <select
+                        [(ngModel)]="selecciones[tipo.key]"
+                        class="w-full bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#e63946] transition">
+                        <option value="" disabled selected class="bg-[#0a1628]">
+                          @if (tipo.soloPortero) { Selecciona un portero... }
+                          @else if (tipo.soloSub21) { Selecciona un jugador sub-21... }
+                          @else { Selecciona un jugador... }
+                        </option>
+                        @for (jugador of getJugadoresPorTipo(tipo.key); track jugador._id) {
+                          <option [value]="jugador._id" class="bg-[#0a1628]">{{ jugador.nombre }}</option>
+                        }
+                      </select>
+                    }
+                  }
+
+                  <button
+                    (click)="guardarPrediccion(tipo.key)"
+                    [disabled]="!selecciones[tipo.key]"
+                    class="w-full bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-4 py-2 rounded-lg text-sm transition">
+                    Guardar
+                  </button>
+                </div>
+              } @else {
+                <div>
+                  <p class="text-white font-bold">{{ getPrediccionActual(tipo.key)?.valorPredicho?.nombre }}</p>
+                  <p class="text-gray-400 text-sm">{{ getPrediccionActual(tipo.key)?.valorPredicho?.equipo?.nombre }}</p>
+                </div>
+              }
+
+              @if (mensajes[tipo.key]) {
+                <p class="text-sm mt-2 font-medium"
+                  [class.text-emerald-400]="mensajes[tipo.key].includes('✅')"
+                  [class.text-red-400]="mensajes[tipo.key].includes('❌')">
+                  {{ mensajes[tipo.key] }}
+                </p>
+              }
+
+            </div>
+          }
         }
       </div>
     }
