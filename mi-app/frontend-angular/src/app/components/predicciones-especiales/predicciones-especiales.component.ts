@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-predicciones-especiales',
@@ -21,6 +22,7 @@ export class PrediccionesEspecialesComponent implements OnInit {
   cerrado = signal<boolean>(false);
   pestanaActiva = signal<'equipos' | 'jugadores'>('equipos');
   mensajes: { [tipo: string]: string } = {};
+  equiposSub21 = signal<any[]>([]);
 
   tiposEquipo = [
     { key: 'Ganador del mundial', label: '🏆 Ganador del mundial' },
@@ -70,76 +72,71 @@ export class PrediccionesEspecialesComponent implements OnInit {
   }
 
 cargarDatos(): void {
-    this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/equipos`, {
+  forkJoin({
+    equipos: this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/equipos`, {
       headers: this.getHeaders()
-    }).subscribe({
-      next: (equipos) => {
-        this.equipos.set(equipos);
+    }),
+    equiposSub21: this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/equipos-con-sub21`, {
+      headers: this.getHeaders()
+    })
+  }).subscribe({
+    next: ({ equipos, equiposSub21 }: { equipos: any[], equiposSub21: any[] }) => {
+      this.equipos.set(equipos);
+      this.equiposSub21.set(equiposSub21);
 
-        this.http.get<any[]>(`${environment.apiUrl}/partidos/fases`, {
-          headers: this.getHeaders()
-        }).subscribe({
-          next: (fases) => {
-            const jornada1 = fases.find(f => f.nombre === 'Jornada 1 Fase de Grupos');
-            if (jornada1) {
-              this.cerrado.set(new Date() > new Date(jornada1.fechaLimite));
-            }
-
-            this.http.get<any>(`${environment.apiUrl}/predicciones-especiales`, {
-              headers: this.getHeaders()
-            }).subscribe({
-              next: (res) => {
-                const predicciones: any[] = Array.isArray(res) ? res : (res.predicciones || []);
-                const tiposResueltos: string[] = Array.isArray(res) ? [] : (res.tiposResueltos || []);
-
-                this.misPredicciones.set(predicciones);
-                this.tiposResueltos.set(tiposResueltos);
-
-                predicciones.forEach((p: any) => {
-                  this.selecciones[p.tipo] = p.valorPredicho?._id || p.valorPredicho;
-
-                  if (p.tipoValor === 'Jugador' && p.valorPredicho?.equipo?._id) {
-                    this.equipoSeleccionado[p.tipo] = p.valorPredicho.equipo._id;
-
-                    const tipoConfig = this.tiposJugador.find(t => t.key === p.tipo);
-                    if (!tipoConfig) return;
-
-                    let url = `${environment.apiUrl}/predicciones-especiales/jugadores?equipoId=${p.valorPredicho.equipo._id}`;
-                    if (tipoConfig.soloPortero) url += '&posicion=Portero';
-                    if (tipoConfig.soloSub21) url += '&soloSub21=true';
-
-                    this.http.get<any[]>(url, { headers: this.getHeaders() }).subscribe({
-                      next: (jugadores) => {
-                        this.jugadoresPorTipo[p.tipo] = jugadores;
-                        this.cdr.detectChanges();
-                      }
-                    });
-                  }
-                });
-
-                this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/resultados`, {
-                  headers: this.getHeaders()
-                }).subscribe({
-                  next: (resultados) => {
-                    this.resultadosGlobales.set(resultados);
-                    this.cargando.set(false);
-                    this.cdr.detectChanges();
-                  },
-                  error: () => {
-                    this.cargando.set(false);
-                  }
-                });
-
-              },
-              error: () => this.cargando.set(false)
-            });
-          },
-          error: () => this.cargando.set(false)
-        });
-      },
-      error: () => this.cargando.set(false)
-    });
-  }
+      this.http.get<any[]>(`${environment.apiUrl}/partidos/fases`, {
+        headers: this.getHeaders()
+      }).subscribe({
+        next: (fases) => {
+          const jornada1 = fases.find(f => f.nombre === 'Jornada 1 Fase de Grupos');
+          if (jornada1) {
+            this.cerrado.set(new Date() > new Date(jornada1.fechaLimite));
+          }
+          this.http.get<any>(`${environment.apiUrl}/predicciones-especiales`, {
+            headers: this.getHeaders()
+          }).subscribe({
+            next: (res) => {
+              const predicciones: any[] = Array.isArray(res) ? res : (res.predicciones || []);
+              const tiposResueltos: string[] = Array.isArray(res) ? [] : (res.tiposResueltos || []);
+              this.misPredicciones.set(predicciones);
+              this.tiposResueltos.set(tiposResueltos);
+              predicciones.forEach((p: any) => {
+                this.selecciones[p.tipo] = p.valorPredicho?._id || p.valorPredicho;
+                if (p.tipoValor === 'Jugador' && p.valorPredicho?.equipo?._id) {
+                  this.equipoSeleccionado[p.tipo] = p.valorPredicho.equipo._id;
+                  const tipoConfig = this.tiposJugador.find(t => t.key === p.tipo);
+                  if (!tipoConfig) return;
+                  let url = `${environment.apiUrl}/predicciones-especiales/jugadores?equipoId=${p.valorPredicho.equipo._id}`;
+                  if (tipoConfig.soloPortero) url += '&posicion=Portero';
+                  if (tipoConfig.soloSub21) url += '&soloSub21=true';
+                  this.http.get<any[]>(url, { headers: this.getHeaders() }).subscribe({
+                    next: (jugadores) => {
+                      this.jugadoresPorTipo[p.tipo] = jugadores;
+                      this.cdr.detectChanges();
+                    }
+                  });
+                }
+              });
+              this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/resultados`, {
+                headers: this.getHeaders()
+              }).subscribe({
+                next: (resultados) => {
+                  this.resultadosGlobales.set(resultados);
+                  this.cargando.set(false);
+                  this.cdr.detectChanges();
+                },
+                error: () => this.cargando.set(false)
+              });
+            },
+            error: () => this.cargando.set(false)
+          });
+        },
+        error: () => this.cargando.set(false)
+      });
+    },
+    error: () => this.cargando.set(false)
+  });
+}
 
   cargarJugadoresPorTipo(tipo: string): void {
     const equipoId = this.equipoSeleccionado[tipo];

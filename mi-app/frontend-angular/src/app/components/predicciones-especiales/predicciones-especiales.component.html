@@ -285,21 +285,21 @@
                 <div class="flex flex-col gap-3">
                   <div class="flex items-center gap-3">
                     <select
-                      [(ngModel)]="equipoSeleccionado[tipo.key]"
-                      (ngModelChange)="cargarJugadoresPorTipo(tipo.key)"
-                      class="flex-1 bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#e63946] transition">
-                      <option value="" disabled selected class="bg-[#0a1628]">Selecciona un equipo...</option>
-                      @for (equipo of equipos(); track equipo._id) {
-                        <option [value]="equipo._id" class="bg-[#0a1628]">{{ equipo.nombre }}</option>
-                      }
-                    </select>
+  [(ngModel)]="equipoSeleccionado[tipo.key]"
+  (ngModelChange)="cargarJugadoresPorTipo(tipo.key)"
+  class="flex-1 bg-white/10 border border-white/20 text-white rounded-lg px-3 py-2 focus:outline-none focus:border-[#e63946] transition">
+  <option value="" disabled selected class="bg-[#0a1628]">Selecciona un equipo...</option>
+  @for (equipo of (tipo.soloSub21 ? equiposSub21() : equipos()); track equipo._id) {
+    <option [value]="equipo._id" class="bg-[#0a1628]">{{ equipo.nombre }}</option>
+  }
+</select>
                     @if (equipoSeleccionado[tipo.key]) {
-                      @for (equipo of equipos(); track equipo._id) {
-                        @if (equipo._id === equipoSeleccionado[tipo.key]) {
-                          <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow shrink-0" />
-                        }
-                      }
-                    }
+  @for (equipo of (tipo.soloSub21 ? equiposSub21() : equipos()); track equipo._id) {
+    @if (equipo._id === equipoSeleccionado[tipo.key]) {
+      <img [src]="getBanderaUrl(equipo.bandera)" class="w-10 h-auto rounded shadow shrink-0" />
+    }
+  }
+}
                   </div>
 
                   @if (equipoSeleccionado[tipo.key]) {

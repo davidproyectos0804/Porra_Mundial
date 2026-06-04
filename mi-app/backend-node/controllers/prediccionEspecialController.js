@@ -225,11 +225,29 @@ const getResultadosEspeciales = async (req, res) => {
     res.status(500).json({ message: 'Error obteniendo resultados', error: error.message });
   }
 };
+const getEquiposConSub21 = async (req, res) => {
+  try {
+    const fechaLimite = new Date('2005-06-01');
+    
+    const equiposConSub21 = await Jugador.distinct('equipo', {
+      fechaNacimiento: { $gte: fechaLimite }
+    });
+
+    const equipos = await Equipo.find({ 
+      _id: { $in: equiposConSub21 } 
+    }).select('nombre bandera').sort({ nombre: 1 });
+
+    res.json(equipos);
+  } catch (error) {
+    res.status(500).json({ message: 'Error obteniendo equipos con sub21', error: error.message });
+  }
+};
 module.exports = {
   guardarPrediccionEspecial,
   getMisPrediccionesEspeciales,
   getEquipos,
   getJugadores,
   resolverPrediccionEspecial,
-  getResultadosEspeciales
+  getResultadosEspeciales,
+  getEquiposConSub21
 };
