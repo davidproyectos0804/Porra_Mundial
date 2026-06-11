@@ -69,19 +69,18 @@ export class PartidosComponent implements OnInit, OnDestroy {
     this.intervalo = setInterval(calcular, 1000);
   }
 
-  cargarFases(): void {
-    this.partidoService.getFases().subscribe({
-      next: (fases) => {
-        const fasesGrupos = fases.filter(f => f.nombre.includes('Fase de Grupos'));
-        this.fases.set(fasesGrupos);
-        if (fasesGrupos.length > 0) {
-          this.faseActual.set(fasesGrupos[0]);
-          this.cargarPartidosYPredicciones(fasesGrupos[0]._id);
-        }
-      },
-      error: () => this.router.navigate(['/login'])
-    });
-  }
+ cargarFases(): void {
+  this.partidoService.getFases().subscribe({
+    next: (fases) => {
+      this.fases.set(fases);
+      if (fases.length > 0) {
+        this.faseActual.set(fases[0]);
+        this.cargarPartidosYPredicciones(fases[0]._id);
+      }
+    },
+    error: () => this.router.navigate(['/login'])
+  });
+}
 
   cargarPartidosYPredicciones(faseId: string): void {
     this.cargando.set(true);
