@@ -69,13 +69,15 @@ export class PartidosComponent implements OnInit, OnDestroy {
     this.intervalo = setInterval(calcular, 1000);
   }
 
- cargarFases(): void {
+cargarFases(): void {
   this.partidoService.getFases().subscribe({
     next: (fases) => {
       this.fases.set(fases);
       if (fases.length > 0) {
-        this.faseActual.set(fases[0]);
-        this.cargarPartidosYPredicciones(fases[0]._id);
+        const indexActual = 0; // ← cambiar numero para indicar la fase actual
+        this.faseIndex.set(indexActual);
+        this.faseActual.set(fases[indexActual]);
+        this.cargarPartidosYPredicciones(fases[indexActual]._id);
       }
     },
     error: () => this.router.navigate(['/login'])
