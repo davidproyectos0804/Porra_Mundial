@@ -43,7 +43,7 @@
 
       <!-- Filas -->
       @for (u of ranking().slice(0, 30); track u._id; let i = $index) {
-        <div [class]="u._id === this.usuario?.id
+        <div [class]="u._id === usuario?._id
           ? 'grid grid-cols-12 px-6 py-4 border-b border-white/5 bg-white/8 border-l-2 border-l-white'
           : i % 2 === 0
           ? 'grid grid-cols-12 px-6 py-4 border-b border-white/5 bg-white/2 hover:bg-white/5 transition-colors duration-150'
@@ -51,17 +51,17 @@
 
           <!-- Posición -->
           <div class="col-span-1 flex items-center justify-center">
-            @if (i === 0) {
-              <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+           @if (i === 0) {
+              <div class="w-8 h-8 bg-[#FFD700] rounded-full flex items-center justify-center">
                 <span class="text-[#0a1628] font-black text-sm">1</span>
               </div>
             } @else if (i === 1) {
-              <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
+              <div class="w-8 h-8 bg-[#C0C0C0] rounded-full flex items-center justify-center">
                 <span class="text-[#0a1628] font-black text-sm">2</span>
               </div>
             } @else if (i === 2) {
-              <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                <span class="text-white font-black text-sm">3</span>
+              <div class="w-8 h-8 bg-[#CD7F32] rounded-full flex items-center justify-center">
+                <span class="text-[#0a1628] font-black text-sm">3</span>
               </div>
             } @else {
               <span class="text-gray-600 font-bold text-sm">{{ i + 1 }}</span>
@@ -79,12 +79,12 @@
               </div>
             }
             <!-- FIX: truncate para nombres largos -->
-            <span [class]="u._id === this.usuario?.id
+            <span [class]="u._id === usuario?._id
               ? 'text-white font-black text-sm truncate'
               : i < 3 ? 'text-white font-bold text-sm truncate' : 'text-gray-300 font-medium text-sm truncate'">
               {{ u.nombre }}
             </span>
-            @if (u._id === this.usuario?.id) {
+            @if (u._id === usuario?._id) {
               <span class="bg-white/20 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">tú</span>
             }
           </div>

@@ -39,7 +39,7 @@ export class RankingComponent implements OnInit {
       next: (data) => {
         this.ranking.set(data.ranking);
         this.total.set(data.total);
-        const index = data.ranking.findIndex((u: any) => u._id === this.usuario?.id);
+        const index = data.ranking.findIndex((u: any) => u._id === this.usuario?._id);
         if (index >= 0) {
           this.miPosicion.set({ ...data.ranking[index], posicion: index + 1 });
         }
