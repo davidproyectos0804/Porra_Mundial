@@ -242,4 +242,29 @@ cargarFases(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+  tiempoParaCierre(): string {
+  const fase = this.faseActual();
+  if (!fase) return '';
+  const diff = new Date(fase.fechaLimite).getTime() - new Date().getTime();
+  if (diff <= 0) return '';
+  const horas = Math.floor(diff / (1000 * 60 * 60));
+  const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+  if (horas >= 24) {
+    const dias = Math.floor(horas / 24);
+    const horasResto = horas % 24;
+    return `${dias}d ${horasResto}h ${minutos}m`;
+  }
+  return `${horas}h ${minutos}m ${segundos}s`;
+}
+
+claseTimerCierre(): string {
+  const fase = this.faseActual();
+  if (!fase) return '';
+  const diff = new Date(fase.fechaLimite).getTime() - new Date().getTime();
+  const horas = diff / (1000 * 60 * 60);
+  if (horas < 6) return 'text-[#e63946] font-black animate-pulse';
+  if (horas < 24) return 'text-yellow-400 font-black';
+  return 'text-emerald-400 font-bold';
+}
 }

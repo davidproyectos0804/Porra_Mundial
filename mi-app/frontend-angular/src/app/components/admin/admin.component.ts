@@ -19,6 +19,7 @@ export class AdminComponent implements OnInit {
   faseActual = signal<any>(null);
   cargando = signal<boolean>(true);
   equipos = signal<any[]>([]);
+  faseIndex = signal<number>(0);
   pestanaActiva = signal<'partidos' | 'especiales'>('partidos');
 
   inputsResultado: { [partidoId: string]: { local: number, visitante: number } } = {};
@@ -140,6 +141,7 @@ export class AdminComponent implements OnInit {
   cambiarFase(fase: any): void {
     this.faseActual.set(fase);
     this.cargarPartidos(fase._id);
+    this.faseIndex.set(this.fases().indexOf(fase));
   }
 
   cargarJugadoresResolucion(tipo: string): void {
@@ -272,4 +274,19 @@ actualizarEquipoSeleccionadoResolucion(tipo: string, equipoId: string): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+  cambiarFaseAnterior(): void {
+  const i = this.faseIndex();
+  if (i > 0) {
+    this.faseIndex.set(i - 1);
+    this.cambiarFase(this.fases()[i - 1]);
+  }
+}
+
+cambiarFaseSiguiente(): void {
+  const i = this.faseIndex();
+  if (i < this.fases().length - 1) {
+    this.faseIndex.set(i + 1);
+    this.cambiarFase(this.fases()[i + 1]);
+  }
+}
 }

@@ -110,4 +110,14 @@ export class RankingComponent implements OnInit {
   getBanderaUrl(codigo: string): string {
     return `https://flagcdn.com/w40/${codigo}.png`;
   }
+
+ getResumenModal(): { aciertos: number, resultados: number, fallos: number, pendientes: number } {
+  const predicciones = this.prediccionesModal();
+  return {
+    aciertos: predicciones.filter(p => p.puntosObtenidos === 500).length,
+    resultados: predicciones.filter(p => p.puntosObtenidos === 200).length,
+    fallos: predicciones.filter(p => p.puntosObtenidos === 0).length,
+    pendientes: predicciones.filter(p => p.puntosObtenidos === null).length
+  };
+}
 }
