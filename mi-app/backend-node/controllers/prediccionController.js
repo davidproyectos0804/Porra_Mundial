@@ -62,5 +62,27 @@ const getMisPredicciones = async (req, res) => {
     res.status(500).json({ message: 'Error obteniendo predicciones', error: error.message });
   }
 };
+const getPrediccionesUsuario = async (req, res) => {
+  try {
+    const { usuarioId } = req.params;
 
-module.exports = { guardarPrediccion, getMisPredicciones };
+    const predicciones = await Prediccion.find({ usuario: usuarioId })
+  .populate({
+    path: 'partido',
+    populate: [
+      { path: 'equipoLocal', select: 'nombre bandera' },
+      { path: 'equipoVisitante', select: 'nombre bandera' },
+      { path: 'fase', select: 'nombre fechaLimite' }
+    ]
+  });
+
+// Ordenar por fechaHora del partido
+predicciones.sort((a, b) => new Date(a.partido.fechaHora) - new Date(b.partido.fechaHora));
+
+res.json(predicciones);
+  } catch (error) {
+    res.status(500).json({ message: 'Error obteniendo predicciones', error: error.message });
+  }
+};
+
+module.exports = { guardarPrediccion, getMisPredicciones, getPrediccionesUsuario };
