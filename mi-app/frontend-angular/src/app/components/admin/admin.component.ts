@@ -34,6 +34,7 @@ export class AdminComponent implements OnInit {
   jugadoresPorTipoResolucion = signal<{ [tipo: string]: any[] }>({});
   cargandoJugadoresResolucion = signal<{ [tipo: string]: boolean }>({});
   cargandoResultados = signal<boolean>(true);
+  guardando: { [partidoId: string]: boolean } = {};
 
   tiposPrediccion = [
     { key: 'Ganador del mundial', label: '🏆 Ganador del mundial' },
@@ -186,7 +187,7 @@ export class AdminComponent implements OnInit {
       setTimeout(() => this.mensajes[partidoId] = '', 3000);
       return;
     }
-
+    this.guardando[partidoId] = true;
     this.http.put(`${environment.apiUrl}/admin/partidos/${partidoId}/resultado`, {
       golesLocal: input.local,
       golesVisitante: input.visitante
@@ -206,6 +207,9 @@ export class AdminComponent implements OnInit {
       error: (err) => {
         this.mensajes[partidoId] = '❌ ' + (err.error?.message || 'Error');
         setTimeout(() => this.mensajes[partidoId] = '', 3000);
+      },
+      complete: () => {
+        this.guardando[partidoId] = false;
       }
     });
   }

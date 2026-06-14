@@ -34,34 +34,25 @@ const meterResultado = async (req, res) => {
     const { partidoId } = req.params;
     const golesLocal = Number(req.body.golesLocal);
     const golesVisitante = Number(req.body.golesVisitante);
-    
 
-    // Buscar el partido
-    const partido = await Partido.findById(partidoId);
+    // Buscar y marcar como finalizado en una sola operación atómica
+    const partido = await Partido.findOneAndUpdate(
+      { _id: partidoId, finalizado: false }, // solo si NO está finalizado
+      { golesLocal, golesVisitante, finalizado: true },
+      { new: true }
+    );
+
+    // Si no encontró nada, es que ya estaba finalizado
     if (!partido) {
-      return res.status(404).json({ message: 'Partido no encontrado' });
-    }
-
-    if (partido.finalizado) {
       return res.status(400).json({ message: 'Este partido ya tiene resultado' });
     }
 
-    // Actualizar resultado del partido
-    partido.golesLocal = golesLocal;
-    partido.golesVisitante = golesVisitante;
-    partido.finalizado = true;
-    await partido.save();
-
-    // Buscar todas las predicciones de este partido
     const predicciones = await Prediccion.find({ partido: partidoId });
 
-    // Calcular y guardar puntos de cada predicción
     for (const prediccion of predicciones) {
       const puntos = calcularPuntos(prediccion, golesLocal, golesVisitante);
       prediccion.puntosObtenidos = puntos;
       await prediccion.save();
-
-      // Sumar puntos al usuario
       await Usuario.findByIdAndUpdate(prediccion.usuario, {
         $inc: { puntosTotales: puntos }
       });
@@ -71,7 +62,6 @@ const meterResultado = async (req, res) => {
       message: `Resultado guardado. ${predicciones.length} predicciones calculadas.`,
       partido
     });
-
   } catch (error) {
     res.status(500).json({ message: 'Error metiendo resultado', error: error.message });
   }

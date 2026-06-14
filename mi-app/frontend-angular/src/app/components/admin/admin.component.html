@@ -80,22 +80,23 @@
                 </div>
               </div>
 
-              @if (!partido.finalizado) {
-                <div class="mt-4 pt-4 border-t border-white/10 flex flex-col gap-3">
-                  <div class="flex items-center gap-3">
-                    <span class="text-gray-400 text-sm font-medium whitespace-nowrap">Resultado:</span>
-                    <input type="number" min="0" [(ngModel)]="inputsResultado[partido._id].local"
-                      class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946]" />
-                    <span class="text-gray-400 font-bold">-</span>
-                    <input type="number" min="0" [(ngModel)]="inputsResultado[partido._id].visitante"
-                      class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946]" />
-                  </div>
-                  <button (click)="meterResultado(partido._id)"
-                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition">
-                    Confirmar resultado
-                  </button>
-                </div>
-              }
+             @if (!partido.finalizado) {
+  <div class="mt-4 pt-4 border-t border-white/10 flex flex-col gap-3">
+    <div class="flex items-center gap-3">
+      <span class="text-gray-400 text-sm font-medium whitespace-nowrap">Resultado:</span>
+      <input type="number" min="0" [(ngModel)]="inputsResultado[partido._id].local"
+        class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946]" />
+      <span class="text-gray-400 font-bold">-</span>
+      <input type="number" min="0" [(ngModel)]="inputsResultado[partido._id].visitante"
+        class="w-14 bg-white/10 border border-white/20 text-white text-center rounded-lg px-2 py-2 focus:outline-none focus:border-[#e63946]" />
+    </div>
+    <button (click)="meterResultado(partido._id)"
+      [disabled]="guardando[partido._id]"
+      class="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 rounded-lg text-sm transition">
+      {{ guardando[partido._id] ? 'Guardando...' : 'Confirmar resultado' }}
+    </button>
+  </div>
+}
 
               @if (mensajes[partido._id]) {
                 <p class="text-sm mt-2 font-medium"
