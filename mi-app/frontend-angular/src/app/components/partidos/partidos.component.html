@@ -23,30 +23,59 @@
   <button
     (click)="jornadadAnterior()"
     [disabled]="faseIndex() === 0"
-    class="bg-[#e63946]/90 hover:bg-[#c1121f] disabled:opacity-30 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
+    class="bg-[#e63946]/90 hover:bg-[#c1121f]
+           disabled:opacity-30 disabled:cursor-not-allowed
+           text-white
+           w-9 h-9 sm:w-auto sm:h-auto
+           sm:px-4 sm:py-3
+           rounded-lg sm:rounded-xl
+           border border-white/10 shadow-2xl backdrop-blur-md
+           transition-all duration-300 hover:scale-110 active:scale-95
+           flex items-center justify-center">
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="w-4 h-4 sm:w-5 sm:h-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2.8">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
     </svg>
   </button>
+
   <div class="text-center">
     <h2 class="text-white font-black text-xl uppercase tracking-wider">
       {{ faseActual()?.nombre }}
     </h2>
+
     <p class="text-xs mt-1">
-   @if (faseActual() && jornadaCerrada()) {
-  <span class="text-red-400 font-bold">🔒 Jornada cerrada</span>
-} @else if (faseActual()) {
-  <span [class]="'text-xs ' + claseTimerCierre()">
-    ⏱ Cierra el {{ faseActual()?.fechaLimite | date:'dd/MM HH:mm' }} · {{ tiempoParaCierre() }}
-  </span>
-}
+      @if (faseActual() && jornadaCerrada()) {
+        <span class="text-red-400 font-bold">🔒 Jornada cerrada</span>
+      } @else if (faseActual()) {
+        <span [class]="'text-xs ' + claseTimerCierre()">
+          ⏱ Cierra el {{ faseActual()?.fechaLimite | date:'dd/MM HH:mm' }} · {{ tiempoParaCierre() }}
+        </span>
+      }
     </p>
   </div>
+
   <button
     (click)="jornadaSiguiente()"
     [disabled]="faseIndex() === fases().length - 1"
-    class="bg-[#e63946]/90 hover:bg-[#c1121f] disabled:opacity-30 disabled:cursor-not-allowed text-white px-4 py-3 rounded-xl border border-white/10 shadow-2xl backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
+    class="bg-[#e63946]/90 hover:bg-[#c1121f]
+           disabled:opacity-30 disabled:cursor-not-allowed
+           text-white
+           w-9 h-9 sm:w-auto sm:h-auto
+           sm:px-4 sm:py-3
+           rounded-lg sm:rounded-xl
+           border border-white/10 shadow-2xl backdrop-blur-md
+           transition-all duration-300 hover:scale-110 active:scale-95
+           flex items-center justify-center">
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="w-4 h-4 sm:w-5 sm:h-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2.8">
       <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
     </svg>
   </button>
