@@ -33,13 +33,13 @@
       {{ faseActual()?.nombre }}
     </h2>
     <p class="text-xs mt-1">
-     @if (jornadaCerrada()) {
-    <span class="text-red-400 font-bold">🔒 Jornada cerrada</span>
-    } @else if (faseActual()) {
-      <span [class]="'text-xs ' + claseTimerCierre()">
-        ⏱ Cierra el {{ faseActual()?.fechaLimite | date:'dd/MM HH:mm' }} · {{ tiempoParaCierre() }}
-      </span>
-    }
+   @if (faseActual() && jornadaCerrada()) {
+  <span class="text-red-400 font-bold">🔒 Jornada cerrada</span>
+} @else if (faseActual()) {
+  <span [class]="'text-xs ' + claseTimerCierre()">
+    ⏱ Cierra el {{ faseActual()?.fechaLimite | date:'dd/MM HH:mm' }} · {{ tiempoParaCierre() }}
+  </span>
+}
     </p>
   </div>
   <button
