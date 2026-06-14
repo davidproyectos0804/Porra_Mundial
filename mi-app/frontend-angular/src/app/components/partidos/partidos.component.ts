@@ -12,7 +12,6 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './partidos.component.html'
 })
 export class PartidosComponent implements OnInit, OnDestroy {
-
   fases = signal<any[]>([]);
   partidos = signal<any[]>([]);
   predicciones = signal<any[]>([]);
@@ -23,9 +22,9 @@ export class PartidosComponent implements OnInit, OnDestroy {
   private intervalo: any;
 
   usuario: any;
-
   inputsPrediccion: { [partidoId: string]: { local: any, visitante: any } } = {};
   mensajes: { [partidoId: string]: string } = {};
+  guardando: { [partidoId: string]: boolean } = {};
 
   constructor(
     private partidoService: PartidoService,
@@ -46,70 +45,60 @@ export class PartidosComponent implements OnInit, OnDestroy {
 
   iniciarContador(): void {
     const fechaInicio = new Date('2026-06-11T21:00:00');
-
     const calcular = () => {
       const ahora = new Date();
       const diff = fechaInicio.getTime() - ahora.getTime();
-
       if (diff <= 0) {
         this.tiempoRestante.set('');
         clearInterval(this.intervalo);
         return;
       }
-
       const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
       const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const segundos = Math.floor((diff % (1000 * 60)) / 1000);
-
       this.tiempoRestante.set(`${dias}d ${horas}h ${minutos}m ${segundos}s`);
     };
-
     calcular();
     this.intervalo = setInterval(calcular, 1000);
   }
 
-cargarFases(): void {
-  this.partidoService.getFases().subscribe({
-    next: (fases) => {
-      this.fases.set(fases);
-      if (fases.length > 0) {
-        const indexActual = 0; // ← cambiar numero para indicar la fase actual
-        this.faseIndex.set(indexActual);
-        this.faseActual.set(fases[indexActual]);
-        this.cargarPartidosYPredicciones(fases[indexActual]._id);
-      }
-    },
-    error: () => this.router.navigate(['/login'])
-  });
-}
+  cargarFases(): void {
+    this.partidoService.getFases().subscribe({
+      next: (fases) => {
+        this.fases.set(fases);
+        if (fases.length > 0) {
+          const indexActual = 0; // ← cambiar numero para indicar la fase actual
+          this.faseIndex.set(indexActual);
+          this.faseActual.set(fases[indexActual]);
+          this.cargarPartidosYPredicciones(fases[indexActual]._id);
+        }
+      },
+      error: () => this.router.navigate(['/login'])
+    });
+  }
 
   cargarPartidosYPredicciones(faseId: string): void {
     this.cargando.set(true);
     this.inputsPrediccion = {};
     this.mensajes = {};
+    this.guardando = {};
 
     this.partidoService.getPartidosPorFase(faseId).subscribe({
       next: (partidos) => {
         this.partidos.set(partidos);
-
-        // Inputs vacíos por defecto
         partidos.forEach(p => {
           this.inputsPrediccion[p._id] = { local: '', visitante: '' };
         });
-
         this.partidoService.getMisPredicciones(faseId).subscribe({
           next: (predicciones) => {
             this.predicciones.set(predicciones);
-
-            // Rellenar con predicciones existentes
             predicciones.forEach(p => {
               this.inputsPrediccion[p.partido] = {
                 local: p.golesLocalPredicho,
                 visitante: p.golesVisitantePredicho
               };
             });
-
             this.cargando.set(false);
           },
           error: () => this.cargando.set(false)
@@ -143,7 +132,6 @@ cargarFases(): void {
     const input = this.inputsPrediccion[partidoId];
     if (input === undefined) return;
 
-    // Validar vacíos
     if (input.local === '' || input.visitante === '') {
       this.mensajes[partidoId] = '❌ Introduce ambos marcadores';
       this.cdr.detectChanges();
@@ -151,19 +139,15 @@ cargarFases(): void {
       return;
     }
 
-    // Validar formato (sin ceros delante)
     if (
-        !/^(0|[1-9]\d*)$/.test(String(input.local)) ||
-        !/^(0|[1-9]\d*)$/.test(String(input.visitante))
-      ) {
-        this.mensajes[partidoId] = '❌ No se permiten ceros a la izquierda';
-        this.cdr.detectChanges();
-        setTimeout(() => {
-          this.mensajes[partidoId] = '';
-          this.cdr.detectChanges();
-        }, 3000);
-        return;
-      }
+      !/^(0|[1-9]\d*)$/.test(String(input.local)) ||
+      !/^(0|[1-9]\d*)$/.test(String(input.visitante))
+    ) {
+      this.mensajes[partidoId] = '❌ No se permiten ceros a la izquierda';
+      this.cdr.detectChanges();
+      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
+      return;
+    }
 
     const local = Number(input.local);
     const visitante = Number(input.visitante);
@@ -189,6 +173,9 @@ cargarFases(): void {
       return;
     }
 
+    this.guardando[partidoId] = true;
+    this.cdr.detectChanges();
+
     this.partidoService.guardarPrediccion(partidoId, local, visitante).subscribe({
       next: () => {
         const actuales = this.predicciones();
@@ -202,12 +189,13 @@ cargarFases(): void {
             puntosObtenidos: null
           }
         ]);
-
+        this.guardando[partidoId] = false;
         this.mensajes[partidoId] = '✅ Guardado';
         this.cdr.detectChanges();
         setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 1000);
       },
       error: (err) => {
+        this.guardando[partidoId] = false;
         this.mensajes[partidoId] = '❌ ' + (err.error?.message || 'Error');
         this.cdr.detectChanges();
         setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
@@ -242,29 +230,30 @@ cargarFases(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-  tiempoParaCierre(): string {
-  const fase = this.faseActual();
-  if (!fase) return '';
-  const diff = new Date(fase.fechaLimite).getTime() - new Date().getTime();
-  if (diff <= 0) return '';
-  const horas = Math.floor(diff / (1000 * 60 * 60));
-  const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  const segundos = Math.floor((diff % (1000 * 60)) / 1000);
-  if (horas >= 24) {
-    const dias = Math.floor(horas / 24);
-    const horasResto = horas % 24;
-    return `${dias}d ${horasResto}h ${minutos}m`;
-  }
-  return `${horas}h ${minutos}m ${segundos}s`;
-}
 
-claseTimerCierre(): string {
-  const fase = this.faseActual();
-  if (!fase) return '';
-  const diff = new Date(fase.fechaLimite).getTime() - new Date().getTime();
-  const horas = diff / (1000 * 60 * 60);
-  if (horas < 6) return 'text-[#e63946] font-black animate-pulse';
-  if (horas < 24) return 'text-yellow-400 font-black';
-  return 'text-emerald-400 font-bold';
-}
+  tiempoParaCierre(): string {
+    const fase = this.faseActual();
+    if (!fase) return '';
+    const diff = new Date(fase.fechaLimite).getTime() - new Date().getTime();
+    if (diff <= 0) return '';
+    const horas = Math.floor(diff / (1000 * 60 * 60));
+    const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+    if (horas >= 24) {
+      const dias = Math.floor(horas / 24);
+      const horasResto = horas % 24;
+      return `${dias}d ${horasResto}h ${minutos}m`;
+    }
+    return `${horas}h ${minutos}m ${segundos}s`;
+  }
+
+  claseTimerCierre(): string {
+    const fase = this.faseActual();
+    if (!fase) return '';
+    const diff = new Date(fase.fechaLimite).getTime() - new Date().getTime();
+    const horas = diff / (1000 * 60 * 60);
+    if (horas < 6) return 'text-[#e63946] font-black animate-pulse';
+    if (horas < 24) return 'text-yellow-400 font-black';
+    return 'text-emerald-400 font-bold';
+  }
 }
