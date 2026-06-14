@@ -30,8 +30,8 @@
       <!-- Cabecera -->
       <div class="bg-white/5 grid grid-cols-12 px-6 py-3 border-b border-white/10">
         <span class="col-span-1 text-gray-500 text-xs font-black uppercase tracking-widest text-center">#</span>
-        <span class="col-span-7 text-gray-500 text-xs font-black uppercase tracking-widest pl-4">Jugador</span>
-        <span class="col-span-4 text-gray-500 text-xs font-black uppercase tracking-widest text-right">Puntos</span>
+        <span class="col-span-6 text-gray-500 text-xs font-black uppercase tracking-widest pl-4">Jugador</span>
+        <span class="col-span-5 text-gray-500 text-xs font-black uppercase tracking-widest text-right">Puntos</span>
       </div>
 
       <!-- Filas -->
@@ -62,7 +62,7 @@
           </div>
 
           <!-- Nombre con foto -->
-          <div class="col-span-7 flex items-center gap-3 pl-4 min-w-0">
+          <div class="col-span-6 flex items-center gap-3 pl-4 min-w-0">
             @if (u.fotoPerfil) {
               <img [src]="u.fotoPerfil" class="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-white/20" />
             } @else {
@@ -81,7 +81,7 @@
           </div>
 
           <!-- Puntos + botón -->
-          <div class="col-span-4 flex items-center justify-end gap-2">
+          <div class="col-span-5 flex items-center justify-end gap-2">
             <span [class]="i === 0 ? 'text-white font-black text-xl tabular-nums'
               : i < 3 ? 'text-gray-200 font-black text-lg tabular-nums'
               : 'text-gray-400 font-bold text-base tabular-nums'">
