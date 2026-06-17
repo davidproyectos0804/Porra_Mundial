@@ -139,15 +139,33 @@ export class PartidosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (
-      !/^(0|[1-9]\d*)$/.test(String(input.local)) ||
-      !/^(0|[1-9]\d*)$/.test(String(input.visitante))
-    ) {
-      this.mensajes[partidoId] = '❌ No se permiten ceros a la izquierda';
-      this.cdr.detectChanges();
-      setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 3000);
-      return;
-    }
+   const localStr = String(input.local);
+const visitanteStr = String(input.visitante);
+
+// Solo números enteros
+if (!/^\d+$/.test(localStr) || !/^\d+$/.test(visitanteStr)) {
+  this.mensajes[partidoId] = '❌ Solo se permiten números';
+  this.cdr.detectChanges();
+  setTimeout(() => {
+    this.mensajes[partidoId] = '';
+    this.cdr.detectChanges();
+  }, 3000);
+  return;
+}
+
+// Ceros a la izquierda
+if (
+  /^0\d+$/.test(localStr) ||
+  /^0\d+$/.test(visitanteStr)
+) {
+  this.mensajes[partidoId] = '❌ No se permiten ceros a la izquierda';
+  this.cdr.detectChanges();
+  setTimeout(() => {
+    this.mensajes[partidoId] = '';
+    this.cdr.detectChanges();
+  }, 3000);
+  return;
+}
 
     const local = Number(input.local);
     const visitante = Number(input.visitante);
@@ -190,7 +208,6 @@ export class PartidosComponent implements OnInit, OnDestroy {
           }
         ]);
         this.guardando[partidoId] = false;
-        this.mensajes[partidoId] = '✅ Guardado';
         this.cdr.detectChanges();
         setTimeout(() => { this.mensajes[partidoId] = ''; this.cdr.detectChanges(); }, 1000);
       },
