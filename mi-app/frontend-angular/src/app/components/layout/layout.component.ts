@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Subscription, filter } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-layout',
@@ -22,7 +24,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   private subs = new Subscription();
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, private http: HttpClient) {}
 
   ngOnInit(): void {
     // Suscripción al usuario reactivo — se actualiza solo cuando cambian los datos
@@ -30,6 +32,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       this.authService.usuario$.subscribe(usuario => {
         this.usuario = usuario;
         this.fotoPerfil.set(usuario?.fotoPerfil || null);
+        this.actualizarPuntos();
       })
     );
 
@@ -52,6 +55,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
   toggleMenu(): void {
     this.menuAbierto.set(!this.menuAbierto());
   }
+  actualizarPuntos(): void {
+  this.http.get<any>(`${environment.apiUrl}/usuario/perfil`, {
+    headers: new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    })
+  }).subscribe({
+    next: (perfil) => {
+      this.usuario.puntosTotales = perfil.puntosTotales;
+      localStorage.setItem('usuario', JSON.stringify(this.usuario));
+    }
+  });
+}
 
   abrirSelectorFoto(): void {
     const input = document.createElement('input');
