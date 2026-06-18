@@ -68,7 +68,7 @@ export class PartidosComponent implements OnInit, OnDestroy {
       next: (fases) => {
         this.fases.set(fases);
         if (fases.length > 0) {
-          const indexActual = 0; // ← cambiar numero para indicar la fase actual
+          const indexActual = 1; // ← cambiar numero para indicar la fase actual
           this.faseIndex.set(indexActual);
           this.faseActual.set(fases[indexActual]);
           this.cargarPartidosYPredicciones(fases[indexActual]._id);
