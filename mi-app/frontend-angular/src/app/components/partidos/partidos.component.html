@@ -52,7 +52,7 @@
         <span class="text-red-400 font-bold">🔒 Jornada cerrada</span>
       } @else if (faseActual()) {
         <span [class]="'text-xs ' + claseTimerCierre()">
-          ⏱ Cierra el {{ faseActual()?.fechaLimite | date:'dd/MM HH:mm' }} · {{ tiempoParaCierre() }}
+          ⏱ Cierra el {{ faseActual()?.fechaLimite | date:'dd/MM HH:mm' }} · {{ tiempoCierre() }}
         </span>
       }
     </p>

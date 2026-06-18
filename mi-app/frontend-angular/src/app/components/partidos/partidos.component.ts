@@ -19,7 +19,9 @@ export class PartidosComponent implements OnInit, OnDestroy {
   faseIndex = signal<number>(0);
   cargando = signal<boolean>(true);
   tiempoRestante = signal<string>('');
+  tiempoCierre = signal<string>('');
   private intervalo: any;
+  private intervaloCierre: any;
 
   usuario: any;
   inputsPrediccion: { [partidoId: string]: { local: any, visitante: any } } = {};
@@ -37,10 +39,12 @@ export class PartidosComponent implements OnInit, OnDestroy {
     this.usuario = this.authService.getUsuario();
     this.cargarFases();
     this.iniciarContador();
+    this.iniciarContadorCierre();
   }
 
   ngOnDestroy(): void {
     if (this.intervalo) clearInterval(this.intervalo);
+    if (this.intervaloCierre) clearInterval(this.intervaloCierre);
   }
 
   iniciarContador(): void {
@@ -62,7 +66,7 @@ export class PartidosComponent implements OnInit, OnDestroy {
     calcular();
     this.intervalo = setInterval(calcular, 1000);
   }
-
+  
   cargarFases(): void {
     this.partidoService.getFases().subscribe({
       next: (fases) => {
@@ -100,11 +104,18 @@ export class PartidosComponent implements OnInit, OnDestroy {
               };
             });
             this.cargando.set(false);
+            this.iniciarContadorCierre();
           },
-          error: () => this.cargando.set(false)
+          error: () => {
+            this.cargando.set(false);
+            this.iniciarContadorCierre();
+          }
         });
       },
-      error: () => this.cargando.set(false)
+      error: () => {
+        this.cargando.set(false);
+        this.iniciarContadorCierre();
+      }
     });
   }
 
@@ -247,7 +258,60 @@ if (
     this.authService.logout();
     this.router.navigate(['/login']);
   }
+iniciarContadorCierre(): void {
+  // 1. Limpia el intervalo anterior SIEMPRE
+  if (this.intervaloCierre) {
+    clearInterval(this.intervaloCierre);
+    this.intervaloCierre = null;
+  }
 
+  // 2. Función que calcula y actualiza el signal
+  const calcular = () => {
+    const fase = this.faseActual();
+    if (!fase) {
+      this.tiempoCierre.set('');
+      return;
+    }
+
+    const ahora = new Date().getTime();
+    const limite = new Date(fase.fechaLimite).getTime();
+    const diff = limite - ahora;
+
+    if (diff <= 0) {
+      this.tiempoCierre.set('Cerrada');
+      // Si ya está cerrada, detenemos el intervalo para no gastar recursos
+      if (this.intervaloCierre) {
+        clearInterval(this.intervaloCierre);
+        this.intervaloCierre = null;
+      }
+      return;
+    }
+
+    // Cálculo de tiempo restante
+    const horasTotales = Math.floor(diff / (1000 * 60 * 60));
+    const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diff % (1000 * 60)) / 1000);
+
+    let texto = '';
+    if (horasTotales >= 24) {
+      const dias = Math.floor(horasTotales / 24);
+      const horasResto = horasTotales % 24;
+      texto = `${dias}d ${horasResto}h ${minutos}m ${segundos}s`;
+    } else {
+      texto = `${horasTotales}h ${minutos}m ${segundos}s`;
+    }
+
+    this.tiempoCierre.set(texto);
+  };
+
+  // 3. Ejecuta el cálculo una vez y luego inicia el intervalo
+  calcular();
+  // Solo inicia el intervalo si la fecha no ha pasado
+  const fase = this.faseActual();
+  if (fase && new Date(fase.fechaLimite).getTime() > new Date().getTime()) {
+    this.intervaloCierre = setInterval(calcular, 1000);
+  }
+}
   tiempoParaCierre(): string {
     const fase = this.faseActual();
     if (!fase) return '';
