@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { PartidoService } from '../../services/partido.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -22,17 +23,39 @@ export class RankingComponent implements OnInit {
   prediccionesModal = signal<any[]>([]);
   cargandoModal = signal<boolean>(false);
   faseModalIndex = signal<number>(0);
+  fasesReales = signal<any[]>([]);
 
   constructor(
     private http: HttpClient,
     private authService: AuthService,
+    private partidoService: PartidoService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.usuario = this.authService.getUsuario();
     this.cargarRanking();
+    this.cargarFasesReales();
   }
+
+  cargarFasesReales(): void {
+  this.partidoService.getFases().subscribe({
+    next: (fases) => {
+      // Comprobar cuáles tienen partidos
+      const checks = fases.map(f =>
+        this.partidoService.getPartidosPorFase(f._id).toPromise().then(partidos => ({
+          fase: f,
+          tienePartidos: (partidos?.length || 0) > 0
+        }))
+      );
+      Promise.all(checks).then(resultados => {
+        const fasesConPartidos = resultados.filter(r => r.tienePartidos).map(r => r.fase);
+        this.fasesReales.set(fasesConPartidos);
+      });
+    },
+    error: () => {}
+  });
+}
 
   cargarRanking(): void {
     const headers = new HttpHeaders({
@@ -53,22 +76,22 @@ export class RankingComponent implements OnInit {
   }
 
   verPredicciones(usuario: any): void {
-    this.modalUsuario.set(usuario);
-    this.prediccionesModal.set([]);
-    this.cargandoModal.set(true);
-    this.faseModalIndex.set(0);
+  this.modalUsuario.set(usuario);
+  this.prediccionesModal.set([]);
+  this.cargandoModal.set(true);
+  this.faseModalIndex.set(1); // ← cambiar número a mano para indicar la fase actual
 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getToken()}`
-    });
-    this.http.get<any[]>(`${environment.apiUrl}/predicciones/usuario/${usuario._id}`, { headers }).subscribe({
-      next: (predicciones) => {
-        this.prediccionesModal.set(predicciones);
-        this.cargandoModal.set(false);
-      },
-      error: () => this.cargandoModal.set(false)
-    });
-  }
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${this.authService.getToken()}`
+  });
+  this.http.get<any[]>(`${environment.apiUrl}/predicciones/usuario/${usuario._id}`, { headers }).subscribe({
+    next: (predicciones) => {
+      this.prediccionesModal.set(predicciones);
+      this.cargandoModal.set(false);
+    },
+    error: () => this.cargandoModal.set(false)
+  });
+}
 
   cerrarModal(): void {
     this.modalUsuario.set(null);
@@ -76,19 +99,16 @@ export class RankingComponent implements OnInit {
     this.faseModalIndex.set(0);
   }
 
-  getFasesModal(): string[] {
-    const fases = this.prediccionesModal()
-      .filter(p => p.partido?.fase)
-      .map(p => p.partido.fase.nombre);
-    return [...new Set<string>(fases)];
+  getFasesModal(): any[] {
+    return this.fasesReales();
   }
 
-  faseModalActual(): string {
-    return this.getFasesModal()[this.faseModalIndex()] || '';
+  faseModalActual(): any {
+    return this.fasesReales()[this.faseModalIndex()] || null;
   }
 
   faseSiguienteModal(): void {
-    if (this.faseModalIndex() < this.getFasesModal().length - 1) {
+    if (this.faseModalIndex() < this.fasesReales().length - 1) {
       this.faseModalIndex.set(this.faseModalIndex() + 1);
     }
   }
@@ -99,8 +119,9 @@ export class RankingComponent implements OnInit {
     }
   }
 
-  getPrediccionesPorFase(fase: string): any[] {
-    return this.prediccionesModal().filter(p => p.partido?.fase?.nombre === fase);
+  getPrediccionesPorFase(fase: any): any[] {
+    if (!fase) return [];
+    return this.prediccionesModal().filter(p => p.partido?.fase?.nombre === fase.nombre);
   }
 
   getFotoPerfil(usuario: any): string | null {
@@ -111,13 +132,13 @@ export class RankingComponent implements OnInit {
     return `https://flagcdn.com/w40/${codigo}.png`;
   }
 
- getResumenModal(): { aciertos: number, resultados: number, fallos: number, pendientes: number } {
-  const predicciones = this.prediccionesModal();
-  return {
-    aciertos: predicciones.filter(p => p.puntosObtenidos === 500).length,
-    resultados: predicciones.filter(p => p.puntosObtenidos === 200).length,
-    fallos: predicciones.filter(p => p.puntosObtenidos === 0).length,
-    pendientes: predicciones.filter(p => p.puntosObtenidos === null).length
-  };
-}
+  getResumenModal(): { aciertos: number, resultados: number, fallos: number, pendientes: number } {
+    const predicciones = this.prediccionesModal();
+    return {
+      aciertos: predicciones.filter(p => p.puntosObtenidos === 500).length,
+      resultados: predicciones.filter(p => p.puntosObtenidos === 200).length,
+      fallos: predicciones.filter(p => p.puntosObtenidos === 0).length,
+      pendientes: predicciones.filter(p => p.puntosObtenidos === null).length
+    };
+  }
 }

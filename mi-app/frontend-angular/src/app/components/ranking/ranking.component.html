@@ -176,45 +176,45 @@
           <p class="text-gray-400 text-center py-8">No hay predicciones aún</p>
         } @else {
           <!-- Resumen -->
-<div class="flex items-center justify-center gap-2 mb-4 py-3 bg-white/5 rounded-xl">
-  <div class="text-center flex-1">
-    <p class="text-emerald-400 font-black text-base">{{ getResumenModal().aciertos }}</p>
-    <p class="text-gray-500 text-[9px] uppercase tracking-wider">Exactos</p>
-  </div>
-  <div class="w-px h-8 bg-white/10"></div>
-  <div class="text-center flex-1">
-    <p class="text-yellow-400 font-black text-base">{{ getResumenModal().resultados }}</p>
-    <p class="text-gray-500 text-[9px] uppercase tracking-wider">Resultado</p>
-  </div>
-  <div class="w-px h-8 bg-white/10"></div>
-  <div class="text-center flex-1">
-    <p class="text-red-400 font-black text-base">{{ getResumenModal().fallos }}</p>
-    <p class="text-gray-500 text-[9px] uppercase tracking-wider">Fallos</p>
-  </div>
-  <div class="w-px h-8 bg-white/10"></div>
-  <div class="text-center flex-1">
-    <p class="text-gray-400 font-black text-base">{{ getResumenModal().pendientes }}</p>
-    <p class="text-gray-500 text-[9px] uppercase tracking-wider">Pendientes</p>
-  </div>
-</div>
+          <div class="flex items-center justify-center gap-2 mb-4 py-3 bg-white/5 rounded-xl">
+            <div class="text-center flex-1">
+              <p class="text-emerald-400 font-black text-base">{{ getResumenModal().aciertos }}</p>
+              <p class="text-gray-500 text-[9px] uppercase tracking-wider">Exactos</p>
+            </div>
+            <div class="w-px h-8 bg-white/10"></div>
+            <div class="text-center flex-1">
+              <p class="text-yellow-400 font-black text-base">{{ getResumenModal().resultados }}</p>
+              <p class="text-gray-500 text-[9px] uppercase tracking-wider">Resultado</p>
+            </div>
+            <div class="w-px h-8 bg-white/10"></div>
+            <div class="text-center flex-1">
+              <p class="text-red-400 font-black text-base">{{ getResumenModal().fallos }}</p>
+              <p class="text-gray-500 text-[9px] uppercase tracking-wider">Fallos</p>
+            </div>
+            <div class="w-px h-8 bg-white/10"></div>
+            <div class="text-center flex-1">
+              <p class="text-gray-400 font-black text-base">{{ getResumenModal().pendientes }}</p>
+              <p class="text-gray-500 text-[9px] uppercase tracking-wider">Pendientes</p>
+            </div>
+          </div>
 
           <!-- Navegación fases -->
           <div class="flex items-center justify-between mb-4">
-    <button (click)="faseAnteriorModal()"
-  [disabled]="faseModalIndex() === 0"
-  class="bg-[#e63946]/90 hover:bg-[#c1121f] disabled:opacity-30 disabled:cursor-not-allowed text-white px-2 py-1.5 rounded-lg border border-white/10 shadow backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center">
-  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-  </svg>
-</button>
-<span class="text-white font-black text-sm text-center px-2">{{ faseModalActual() }}</span>
-<button (click)="faseSiguienteModal()"
-  [disabled]="faseModalIndex() === getFasesModal().length - 1"
-  class="bg-[#e63946]/90 hover:bg-[#c1121f] disabled:opacity-30 disabled:cursor-not-allowed text-white px-2 py-1.5 rounded-lg border border-white/10 shadow backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center">
-  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-  </svg>
-</button>
+            <button (click)="faseAnteriorModal()"
+          [disabled]="faseModalIndex() === 0"
+          class="bg-[#e63946]/90 hover:bg-[#c1121f] disabled:opacity-30 disabled:cursor-not-allowed text-white px-2 py-1.5 rounded-lg border border-white/10 shadow backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          </button>
+            <span class="text-white font-black text-sm text-center px-2">{{ faseModalActual()?.nombre }}</span>
+            <button (click)="faseSiguienteModal()"
+              [disabled]="faseModalIndex() === getFasesModal().length - 1"
+              class="bg-[#e63946]/90 hover:bg-[#c1121f] disabled:opacity-30 disabled:cursor-not-allowed text-white px-2 py-1.5 rounded-lg border border-white/10 shadow backdrop-blur-md transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
 
           <!-- Predicciones de la fase actual -->
@@ -254,7 +254,7 @@
             }
 
             @if (getPrediccionesPorFase(faseModalActual()).length === 0) {
-              <p class="text-gray-400 text-center py-4">Sin predicciones en esta fase</p>
+              <p class="text-gray-400 text-center mb-6 py-4">Sin predicciones en esta fase</p>
             }
           </div>
         }
