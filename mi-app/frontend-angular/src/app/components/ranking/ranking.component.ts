@@ -79,7 +79,7 @@ export class RankingComponent implements OnInit {
   this.modalUsuario.set(usuario);
   this.prediccionesModal.set([]);
   this.cargandoModal.set(true);
-  this.faseModalIndex.set(2); // ← cambiar número a mano para indicar la fase actual
+  this.faseModalIndex.set(3); // ← cambiar número a mano para indicar la fase actual
 
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${this.authService.getToken()}`
