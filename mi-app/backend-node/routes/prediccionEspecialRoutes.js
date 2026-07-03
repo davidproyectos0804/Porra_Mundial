@@ -7,7 +7,8 @@ const {
   getJugadores,
   resolverPrediccionEspecial,
   getResultadosEspeciales,
-  getEquiposConSub21
+  getEquiposConSub21,
+  getPrediccionesEspecialesUsuario
 } = require('../controllers/prediccionEspecialController');
 const { protegerRuta, soloAdmin } = require('../middleware/authMiddleware');
 
@@ -31,5 +32,12 @@ router.get('/resultados', protegerRuta, getResultadosEspeciales);
 
 // GET /api/predicciones-especiales/equipos-con-sub21
 router.get('/equipos-con-sub21', protegerRuta, getEquiposConSub21);
+
+// GET /api/predicciones-especiales/usuario/:id
+router.get(
+  '/usuario/:id',
+  protegerRuta,
+  getPrediccionesEspecialesUsuario
+);
 
 module.exports = router;

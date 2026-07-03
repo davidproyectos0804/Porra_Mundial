@@ -169,9 +169,37 @@
         </div>
         <button (click)="cerrarModal()" class="text-gray-400 hover:text-white text-xl transition">✕</button>
       </div>
+      <div class="flex border-b border-white/10 bg-white/5">
+
+      <button
+        (click)="cambiarPestana('predicciones')"
+        class="flex-1 py-3 text-sm font-bold transition"
+        [class.text-white]="pestanaModal() === 'predicciones'"
+        [class.border-b-2]="pestanaModal() === 'predicciones'"
+        [class.border-[#e63946]]="pestanaModal() === 'predicciones'"
+        [class.text-gray-500]="pestanaModal() !== 'predicciones'">
+
+        Predicciones
+
+      </button>
+
+      <button
+        (click)="cambiarPestana('especiales')"
+        class="flex-1 py-3 text-sm font-bold transition"
+        [class.text-white]="pestanaModal() === 'especiales'"
+        [class.border-b-2]="pestanaModal() === 'especiales'"
+        [class.border-[#e63946]]="pestanaModal() === 'especiales'"
+        [class.text-gray-500]="pestanaModal() !== 'especiales'">
+
+        Especiales
+
+      </button>
+
+    </div>
 
       <!-- Contenido -->
       <div class="overflow-y-auto flex-1 px-5 py-4">
+        @if (pestanaModal() === 'predicciones') {
         @if (cargandoModal()) {
           <p class="text-gray-400 text-center py-8">Cargando predicciones...</p>
         } @else if (prediccionesModal().length === 0) {
@@ -260,6 +288,183 @@
             }
           </div>
         }
+        }@else if (pestanaModal() === 'especiales') {
+
+<div class="space-y-8">
+
+  <!-- ===================== SELECCIONES ===================== -->
+  <div>
+
+    <h3 class="text-lg font-black text-white mb-4 flex items-center gap-2">
+      🏆 Selecciones
+    </h3>
+
+    @if (!prediccionesEspecialesModal().some(p => p.tipoValor === 'Equipo')) {
+
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+        <p class="text-gray-400">
+          Este usuario no ha realizado ninguna predicción de selecciones.
+        </p>
+      </div>
+
+    } @else {
+
+      <div class="space-y-3">
+
+        @for (p of prediccionesEspecialesModal(); track p._id) {
+
+          @if (p.tipoValor === 'Equipo') {
+
+            <div class="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+
+              <div class="flex justify-between items-center">
+
+                <div>
+
+                  <p class="text-xs uppercase tracking-wider text-gray-400">
+                    {{ p.tipo }}
+                  </p>
+
+                  <div class="flex items-center gap-2 mt-2">
+
+                    <img
+                      [src]="getBanderaUrl(p.valorPredicho?.bandera)"
+                      class="w-6 h-4 rounded object-cover">
+
+                    <span class="text-white font-semibold">
+                      {{ p.valorPredicho?.nombre }}
+                    </span>
+
+                  </div>
+
+                </div>
+
+                @if (p.puntosObtenidos === null) {
+
+                  <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 font-bold text-sm">
+                    Pendiente
+                  </span>
+
+                } @else if (p.puntosObtenidos === 1000) {
+
+                  <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 font-bold text-sm">
+                    {{ p.puntosObtenidos }} pts
+                  </span>
+
+                } @else {
+
+                  <span class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-bold text-sm">
+                    {{ p.puntosObtenidos }} pts
+                  </span>
+
+                }
+
+              </div>
+
+            </div>
+
+          }
+
+        }
+
+      </div>
+
+    }
+
+  </div>
+
+  <!-- ===================== JUGADORES ===================== -->
+  <div>
+
+    <h3 class="text-lg font-black text-white mb-4 flex items-center gap-2">
+      👤 Jugadores
+    </h3>
+
+    @if (!prediccionesEspecialesModal().some(p => p.tipoValor === 'Jugador')) {
+
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+        <p class="text-gray-400">
+          Este usuario no ha realizado ninguna predicción de jugadores.
+        </p>
+      </div>
+
+    } @else {
+
+      <div class="space-y-3">
+
+        @for (p of prediccionesEspecialesModal(); track p._id) {
+
+          @if (p.tipoValor === 'Jugador') {
+
+            <div class="bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+
+              <div class="flex justify-between items-center">
+
+                <div>
+
+                  <p class="text-xs uppercase tracking-wider text-gray-400">
+                    {{ p.tipo }}
+                  </p>
+
+                  <p class="text-white font-semibold mt-2">
+                    {{ p.valorPredicho?.nombre }}
+                  </p>
+
+                  @if (p.valorPredicho?.equipo) {
+
+                    <div class="flex items-center gap-2 mt-1">
+
+                      <img
+                        [src]="getBanderaUrl(p.valorPredicho.equipo.bandera)"
+                        class="w-5 h-3 rounded object-cover">
+
+                      <span class="text-sm text-gray-400">
+                        {{ p.valorPredicho.equipo.nombre }}
+                      </span>
+
+                    </div>
+
+                  }
+
+                </div>
+
+                @if (p.puntosObtenidos === null) {
+
+                  <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 font-bold text-sm">
+                    Pendiente
+                  </span>
+
+                } @else if (p.puntosObtenidos === 1000) {
+
+                  <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 font-bold text-sm">
+                    {{ p.puntosObtenidos }} pts
+                  </span>
+
+                } @else {
+
+                  <span class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-bold text-sm">
+                    {{ p.puntosObtenidos }} pts
+                  </span>
+
+                }
+
+              </div>
+
+            </div>
+
+          }
+
+        }
+
+      </div>
+
+    }
+
+  </div>
+
+</div>
+
+}
       </div>
 
     </div>

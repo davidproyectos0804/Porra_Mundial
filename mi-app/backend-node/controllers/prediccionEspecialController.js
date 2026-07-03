@@ -242,6 +242,53 @@ const getEquiposConSub21 = async (req, res) => {
     res.status(500).json({ message: 'Error obteniendo equipos con sub21', error: error.message });
   }
 };
+const getPrediccionesEspecialesUsuario = async (req, res) => {
+  try {
+    const usuarioId = req.params.id;
+
+    const prediccionesSinPoblar = await PrediccionEspecial.find({
+      usuario: usuarioId
+    }).lean();
+
+    const prediccionesEquipo = prediccionesSinPoblar.filter(
+      p => p.tipoValor === 'Equipo'
+    );
+
+    const prediccionesJugador = prediccionesSinPoblar.filter(
+      p => p.tipoValor === 'Jugador'
+    );
+
+    const equiposPoblados = await PrediccionEspecial.populate(
+      prediccionesEquipo,
+      {
+        path: 'valorPredicho',
+        select: 'nombre bandera'
+      }
+    );
+
+    const jugadoresPoblados = await PrediccionEspecial.populate(
+      prediccionesJugador,
+      {
+        path: 'valorPredicho',
+        select: 'nombre posicion equipo',
+        populate: {
+          path: 'equipo',
+          select: 'nombre bandera'
+        }
+      }
+    );
+
+    const predicciones = [...equiposPoblados, ...jugadoresPoblados];
+
+    res.json(predicciones);
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error obteniendo predicciones especiales',
+      error: error.message
+    });
+  }
+};
 module.exports = {
   guardarPrediccionEspecial,
   getMisPrediccionesEspeciales,
@@ -249,5 +296,6 @@ module.exports = {
   getJugadores,
   resolverPrediccionEspecial,
   getResultadosEspeciales,
-  getEquiposConSub21
+  getEquiposConSub21,
+  getPrediccionesEspecialesUsuario
 };

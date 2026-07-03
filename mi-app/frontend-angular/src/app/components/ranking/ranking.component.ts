@@ -22,6 +22,12 @@ export class RankingComponent implements OnInit {
   modalUsuario = signal<any>(null);
   prediccionesModal = signal<any[]>([]);
   cargandoModal = signal<boolean>(false);
+
+  prediccionesEspecialesModal = signal<any[]>([]);
+  cargandoEspecialesModal = signal<boolean>(false);
+
+  pestanaModal = signal<'predicciones' | 'especiales'>('predicciones');
+
   faseModalIndex = signal<number>(0);
   fasesReales = signal<any[]>([]);
 
@@ -77,8 +83,14 @@ export class RankingComponent implements OnInit {
 
   verPredicciones(usuario: any): void {
   this.modalUsuario.set(usuario);
-  this.prediccionesModal.set([]);
-  this.cargandoModal.set(true);
+
+this.prediccionesModal.set([]);
+this.prediccionesEspecialesModal.set([]);
+
+this.cargandoModal.set(true);
+this.cargandoEspecialesModal.set(true);
+
+this.pestanaModal.set('predicciones');  
   this.faseModalIndex.set(3); // ← cambiar número a mano para indicar la fase actual
 
   const headers = new HttpHeaders({
@@ -91,13 +103,30 @@ export class RankingComponent implements OnInit {
     },
     error: () => this.cargandoModal.set(false)
   });
+ this.http.get<any[]>(
+  `${environment.apiUrl}/predicciones-especiales/usuario/${usuario._id}`,
+  { headers }
+).subscribe({
+  next: (data) => {
+    console.log('Especiales:', data);
+    this.prediccionesEspecialesModal.set(data);
+    this.cargandoEspecialesModal.set(false);
+  },
+  error: (err) => {
+    console.error('Error especiales:', err);
+    this.cargandoEspecialesModal.set(false);
+  }
+});
 }
 
-  cerrarModal(): void {
-    this.modalUsuario.set(null);
-    this.prediccionesModal.set([]);
-    this.faseModalIndex.set(0);
-  }
+ cerrarModal(): void {
+  this.modalUsuario.set(null);
+  this.prediccionesModal.set([]);
+  this.prediccionesEspecialesModal.set([]);
+
+  this.faseModalIndex.set(0);
+  this.pestanaModal.set('predicciones');
+}
 
   getFasesModal(): any[] {
     return this.fasesReales();
@@ -141,4 +170,15 @@ export class RankingComponent implements OnInit {
       pendientes: predicciones.filter(p => p.puntosObtenidos === null).length
     };
   }
+  cambiarPestana(pestana: 'predicciones' | 'especiales'): void {
+  this.pestanaModal.set(pestana);
+}
+
+esEquipo(p: any): boolean {
+  return p.tipoValor === 'Equipo';
+}
+
+esJugador(p: any): boolean {
+  return p.tipoValor === 'Jugador';
+}
 }
