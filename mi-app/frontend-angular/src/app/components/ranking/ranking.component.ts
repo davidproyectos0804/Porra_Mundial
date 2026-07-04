@@ -44,11 +44,16 @@ export class RankingComponent implements OnInit {
     this.cargarFasesReales();
   }
 
-  cargarFasesReales(): void {
+ cargarFasesReales(): void {
   this.partidoService.getFases().subscribe({
     next: (fases) => {
-      // Comprobar cuáles tienen partidos
-      const checks = fases.map(f =>
+      const ahora = new Date();
+
+      // Solo nos interesan las fases cuya fechaLimite ya pasó (están cerradas)
+      const fasesCerradas = fases.filter(f => new Date(f.fechaLimite) < ahora);
+
+      // Comprobar cuáles de esas fases cerradas tienen partidos
+      const checks = fasesCerradas.map(f =>
         this.partidoService.getPartidosPorFase(f._id).toPromise().then(partidos => ({
           fase: f,
           tienePartidos: (partidos?.length || 0) > 0
@@ -56,6 +61,8 @@ export class RankingComponent implements OnInit {
       );
       Promise.all(checks).then(resultados => {
         const fasesConPartidos = resultados.filter(r => r.tienePartidos).map(r => r.fase);
+        // Por si el backend no las devuelve ordenadas
+        fasesConPartidos.sort((a, b) => new Date(a.fechaLimite).getTime() - new Date(b.fechaLimite).getTime());
         this.fasesReales.set(fasesConPartidos);
       });
     },
@@ -91,7 +98,7 @@ this.cargandoModal.set(true);
 this.cargandoEspecialesModal.set(true);
 
 this.pestanaModal.set('predicciones');  
-  this.faseModalIndex.set(4); // ← cambiar número a mano para indicar la fase actual
+  this.faseModalIndex.set(Math.max(this.fasesReales().length - 1, 0));
 
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${this.authService.getToken()}`
