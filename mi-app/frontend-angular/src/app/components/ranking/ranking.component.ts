@@ -91,7 +91,7 @@ this.cargandoModal.set(true);
 this.cargandoEspecialesModal.set(true);
 
 this.pestanaModal.set('predicciones');  
-  this.faseModalIndex.set(3); // ← cambiar número a mano para indicar la fase actual
+  this.faseModalIndex.set(4); // ← cambiar número a mano para indicar la fase actual
 
   const headers = new HttpHeaders({
     'Authorization': `Bearer ${this.authService.getToken()}`
