@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const Grupo = require('./models/Grupo');
-const Equipo = require('./models/Equipo');
-const Fase = require('./models/Fase');
-const Partido = require('./models/Partido');
-const Prediccion = require('./models/Prediccion');
-const PrediccionEspecial = require('./models/PrediccionEspecial');
-const Usuario = require('./models/Usuario');
+const Grupo = require('../models/Grupo');
+const Equipo = require('../models/Equipo');
+const Fase = require('../models/Fase');
+const Partido = require('../models/Partido');
+const Prediccion = require('../models/Prediccion');
+const PrediccionEspecial = require('../models/PrediccionEspecial');
+const Usuario = require('../models/Usuario');
 
   const seedData = async () => {
     try {

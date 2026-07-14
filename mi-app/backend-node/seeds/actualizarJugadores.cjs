@@ -5,8 +5,8 @@
 
 const mongoose = require('mongoose');
 require('dotenv').config();
-const Jugador = require('./models/Jugador');
-const Equipo = require('./models/Equipo');
+const Jugador = require('../models/Jugador');
+const Equipo = require('../models/Equipo');
 // Posiciones: "Portero", "Defensa", "Centrocampista", "Delantero"
 // fechaNacimiento: "YYYY-MM-DD"
 

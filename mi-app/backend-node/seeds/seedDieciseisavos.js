@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-const Partido = require('./models/Partido');
-const Fase = require('./models/Fase');
-const Equipo = require('./models/Equipo');
+const Partido = require('../models/Partido');
+const Fase = require('../models/Fase');
+const Equipo = require('../models/Equipo');
 
 const seedDieciseisavos = async () => {
   try {

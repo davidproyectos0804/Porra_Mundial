@@ -95,4 +95,58 @@ const getFasesAdmin = async (req, res) => {
   }
 };
 
-module.exports = { meterResultado, getPartidosAdmin, getFasesAdmin };
+// Crear un partido nuevo
+const crearPartido = async (req, res) => {
+  try {
+    const { fase, equipoLocal, equipoVisitante, fechaHora } = req.body;
+
+    if (!fase || !equipoLocal || !equipoVisitante || !fechaHora) {
+      return res.status(400).json({ message: 'Faltan campos obligatorios' });
+    }
+
+    if (equipoLocal === equipoVisitante) {
+      return res.status(400).json({ message: 'Un equipo no puede jugar contra sí mismo' });
+    }
+
+    const [faseExiste, localExiste, visitanteExiste] = await Promise.all([
+      Fase.findById(fase),
+      Equipo.findById(equipoLocal),
+      Equipo.findById(equipoVisitante)
+    ]);
+
+    if (!faseExiste) return res.status(404).json({ message: 'La fase no existe' });
+    if (!localExiste || !visitanteExiste) return res.status(404).json({ message: 'Alguno de los equipos no existe' });
+
+    const partido = await Partido.create({ fase, equipoLocal, equipoVisitante, fechaHora });
+    const partidoPopulado = await Partido.findById(partido._id)
+      .populate('equipoLocal', 'nombre bandera')
+      .populate('equipoVisitante', 'nombre bandera')
+      .populate('fase', 'nombre');
+
+    res.status(201).json({ message: 'Partido creado correctamente', partido: partidoPopulado });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creando partido', error: error.message });
+  }
+};
+const borrarPartido = async (req, res) => {
+  try {
+    const { partidoId } = req.params;
+
+    const partido = await Partido.findById(partidoId);
+    if (!partido) {
+      return res.status(404).json({ message: 'El partido no existe' });
+    }
+
+    if (partido.finalizado) {
+      return res.status(400).json({ message: 'No se puede borrar un partido que ya tiene resultado' });
+    }
+
+    await Partido.deleteOne({ _id: partidoId });
+
+    res.json({ message: 'Partido borrado correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error borrando partido', error: error.message });
+  }
+};
+
+module.exports = { meterResultado, getPartidosAdmin, getFasesAdmin, crearPartido, borrarPartido };

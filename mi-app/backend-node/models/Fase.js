@@ -15,6 +15,7 @@ const faseSchema = new mongoose.Schema({
       'Octavos',
       'Cuartos',
       'Semifinales',
+      '3er Puesto',
       'Final'
     ]
   },

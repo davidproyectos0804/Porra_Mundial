@@ -24,6 +24,13 @@ export class AdminComponent implements OnInit {
 
   inputsResultado: { [partidoId: string]: { local: number, visitante: number } } = {};
   mensajes: { [partidoId: string]: string } = {};
+  guardando: { [partidoId: string]: boolean } = {};
+  borrando: { [partidoId: string]: boolean } = {};
+
+  // Formulario de creación de partido
+  nuevoPartido = { equipoLocal: '', equipoVisitante: '', fecha: '', hora: '' };
+  creandoPartido = signal<boolean>(false);
+  mensajeNuevoPartido = signal<string>('');
 
   // Señales para las predicciones especiales
   resolviendo = signal<{ [tipo: string]: boolean }>({});
@@ -35,7 +42,6 @@ export class AdminComponent implements OnInit {
   jugadoresPorTipoResolucion = signal<{ [tipo: string]: any[] }>({});
   cargandoJugadoresResolucion = signal<{ [tipo: string]: boolean }>({});
   cargandoResultados = signal<boolean>(true);
-  guardando: { [partidoId: string]: boolean } = {};
 
   tiposPrediccion = [
     { key: 'Ganador del mundial', label: '🏆 Ganador del mundial' },
@@ -74,19 +80,36 @@ export class AdminComponent implements OnInit {
   }
 
   cargarFases(): void {
-    this.http.get<any[]>(`${environment.apiUrl}/admin/fases`, {
-      headers: this.getHeaders()
-    }).subscribe({
-      next: (fases) => {
-        this.fases.set(fases);
-        if (fases.length > 0) {
-          this.faseActual.set(fases[0]);
-          this.cargarPartidos(fases[0]._id);
+  this.http.get<any[]>(`${environment.apiUrl}/admin/fases`, {
+    headers: this.getHeaders()
+  }).subscribe({
+    next: (fases) => {
+      this.fases.set(fases);
+      if (fases.length > 0) {
+        const ahora = new Date().getTime();
+        let indexInicial = 0;
+
+        // Busca la última fase cuya fechaLimite ya ha pasado
+        for (let i = fases.length - 1; i >= 0; i--) {
+          if (new Date(fases[i].fechaLimite).getTime() < ahora) {
+            indexInicial = i;
+            break;
+          }
         }
-      },
-      error: () => this.router.navigate(['/partidos'])
-    });
-  }
+
+        this.faseIndex.set(indexInicial);
+        this.faseActual.set(fases[indexInicial]);
+        this.cargarPartidos(fases[indexInicial]._id);
+      }
+    },
+    error: () => this.router.navigate(['/partidos'])
+  });
+}
+faseEstaCerrada(): boolean {
+  const fase = this.faseActual();
+  if (!fase) return false;
+  return new Date() > new Date(fase.fechaLimite);
+}
 
   cargarEquipos(): void {
     this.http.get<any[]>(`${environment.apiUrl}/predicciones-especiales/equipos`, {
@@ -216,6 +239,77 @@ export class AdminComponent implements OnInit {
     });
   }
 
+crearPartido(): void {
+  const { equipoLocal, equipoVisitante, fecha, hora } = this.nuevoPartido;
+
+  const fase = this.faseActual();
+  if (!fase) return;
+
+  if (new Date() > new Date(fase.fechaLimite)) {
+    this.mensajeNuevoPartido.set('❌ No se pueden añadir partidos a una fase cerrada');
+    setTimeout(() => this.mensajeNuevoPartido.set(''), 3000);
+    return;
+  }
+
+  if (!equipoLocal || !equipoVisitante || !fecha || !hora) {
+    this.mensajeNuevoPartido.set('❌ Rellena todos los campos');
+    setTimeout(() => this.mensajeNuevoPartido.set(''), 3000);
+    return;
+  }
+
+  if (equipoLocal === equipoVisitante) {
+    this.mensajeNuevoPartido.set('❌ Los equipos no pueden ser iguales');
+    setTimeout(() => this.mensajeNuevoPartido.set(''), 3000);
+    return;
+  }
+
+  const fechaHora = new Date(`${fecha}T${hora}:00`);
+
+  this.creandoPartido.set(true);
+
+  this.http.post(`${environment.apiUrl}/admin/partidos`, {
+    fase: fase._id,
+    equipoLocal,
+    equipoVisitante,
+    fechaHora
+  }, { headers: this.getHeaders() }).subscribe({
+    next: () => {
+      this.mensajeNuevoPartido.set('✅ Partido creado');
+      this.nuevoPartido = { equipoLocal: '', equipoVisitante: '', fecha: '', hora: '' };
+      this.cargarPartidos(fase._id);
+      this.creandoPartido.set(false);
+      setTimeout(() => this.mensajeNuevoPartido.set(''), 3000);
+    },
+    error: (err) => {
+      this.mensajeNuevoPartido.set('❌ ' + (err.error?.message || 'Error'));
+      this.creandoPartido.set(false);
+      setTimeout(() => this.mensajeNuevoPartido.set(''), 3000);
+    }
+  });
+}
+
+  borrarPartido(partidoId: string): void {
+    const confirmado = confirm('¿Seguro que quieres borrar este partido? Esta acción no se puede deshacer.');
+    if (!confirmado) return;
+
+    this.borrando[partidoId] = true;
+
+    this.http.delete(`${environment.apiUrl}/admin/partidos/${partidoId}`, {
+      headers: this.getHeaders()
+    }).subscribe({
+      next: () => {
+        this.partidos.set(this.partidos().filter(p => p._id !== partidoId));
+      },
+      error: (err) => {
+        this.mensajes[partidoId] = '❌ ' + (err.error?.message || 'Error borrando');
+        setTimeout(() => this.mensajes[partidoId] = '', 3000);
+      },
+      complete: () => {
+        this.borrando[partidoId] = false;
+      }
+    });
+  }
+
   resolverEspecial(tipo: string): void {
     const valorCorrecto = this.seleccionesResolucion()[tipo];
     if (!valorCorrecto) {
@@ -258,14 +352,15 @@ export class AdminComponent implements OnInit {
     });
   }
 
-actualizarSeleccionResolucion(tipo: string, valor: string): void {
-  this.seleccionesResolucion.update(v => ({ ...v, [tipo]: valor }));
-}
+  actualizarSeleccionResolucion(tipo: string, valor: string): void {
+    this.seleccionesResolucion.update(v => ({ ...v, [tipo]: valor }));
+  }
 
-actualizarEquipoSeleccionadoResolucion(tipo: string, equipoId: string): void {
-  this.equipoSeleccionadoResolucion.update(v => ({ ...v, [tipo]: equipoId }));
-  this.cargarJugadoresResolucion(tipo);
-}
+  actualizarEquipoSeleccionadoResolucion(tipo: string, equipoId: string): void {
+    this.equipoSeleccionadoResolucion.update(v => ({ ...v, [tipo]: equipoId }));
+    this.cargarJugadoresResolucion(tipo);
+  }
+
   getBanderaUrl(codigo: string): string {
     return `https://flagcdn.com/w40/${codigo}.png`;
   }
@@ -274,19 +369,20 @@ actualizarEquipoSeleccionadoResolucion(tipo: string, equipoId: string): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-  cambiarFaseAnterior(): void {
-  const i = this.faseIndex();
-  if (i > 0) {
-    this.faseIndex.set(i - 1);
-    this.cambiarFase(this.fases()[i - 1]);
-  }
-}
 
-cambiarFaseSiguiente(): void {
-  const i = this.faseIndex();
-  if (i < this.fases().length - 1) {
-    this.faseIndex.set(i + 1);
-    this.cambiarFase(this.fases()[i + 1]);
+  cambiarFaseAnterior(): void {
+    const i = this.faseIndex();
+    if (i > 0) {
+      this.faseIndex.set(i - 1);
+      this.cambiarFase(this.fases()[i - 1]);
+    }
   }
-}
+
+  cambiarFaseSiguiente(): void {
+    const i = this.faseIndex();
+    if (i < this.fases().length - 1) {
+      this.faseIndex.set(i + 1);
+      this.cambiarFase(this.fases()[i + 1]);
+    }
+  }
 }

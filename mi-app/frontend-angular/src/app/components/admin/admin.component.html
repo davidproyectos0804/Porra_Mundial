@@ -115,6 +115,11 @@
                     class="w-full bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 rounded-xl text-sm transition">
                     {{ guardando[partido._id] ? 'Guardando...' : 'Confirmar resultado' }}
                   </button>
+                  <button (click)="borrarPartido(partido._id)"
+                    [disabled]="borrando[partido._id]"
+                    class="w-full bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/40 disabled:opacity-50 disabled:cursor-not-allowed text-gray-400 hover:text-red-400 font-bold px-4 py-2 rounded-xl text-xs transition">
+                    {{ borrando[partido._id] ? 'Borrando...' : '🗑 Borrar partido' }}
+                  </button>
                 </div>
               }
 
@@ -129,6 +134,65 @@
             </div>
           }
         </div>
+
+        <!-- Crear partido nuevo / aviso de fase cerrada -->
+        @if (faseEstaCerrada()) {
+          <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mt-4 text-center">
+            <p class="text-gray-500 text-sm">🔒 Esta fase está cerrada, no se pueden añadir más partidos</p>
+          </div>
+        } @else {
+          <div class="bg-white/5 border border-[#e63946]/30 rounded-2xl p-5 mt-4">
+            <h3 class="text-white font-black text-sm mb-4 uppercase tracking-wider">➕ Añadir partido a {{ faseActual()?.nombre }}</h3>
+
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center gap-3">
+                <select
+                  [(ngModel)]="nuevoPartido.equipoLocal"
+                  class="flex-1 bg-white/10 border border-white/20 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#e63946] transition">
+                  <option value="" disabled selected class="bg-[#0a1628]">Equipo local...</option>
+                  @for (equipo of equipos(); track equipo._id) {
+                    <option [value]="equipo._id" class="bg-[#0a1628]">{{ equipo.nombre }}</option>
+                  }
+                </select>
+                <span class="text-gray-500 font-bold text-xs">VS</span>
+                <select
+                  [(ngModel)]="nuevoPartido.equipoVisitante"
+                  class="flex-1 bg-white/10 border border-white/20 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#e63946] transition">
+                  <option value="" disabled selected class="bg-[#0a1628]">Equipo visitante...</option>
+                  @for (equipo of equipos(); track equipo._id) {
+                    <option [value]="equipo._id" class="bg-[#0a1628]">{{ equipo.nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <input
+                  type="date"
+                  [(ngModel)]="nuevoPartido.fecha"
+                  class="flex-1 bg-white/10 border border-white/20 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#e63946] transition" />
+                <input
+                  type="time"
+                  [(ngModel)]="nuevoPartido.hora"
+                  class="flex-1 bg-white/10 border border-white/20 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#e63946] transition" />
+              </div>
+
+              <button
+                (click)="crearPartido()"
+                [disabled]="creandoPartido()"
+                class="w-full bg-[#e63946] hover:bg-[#c1121f] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+                {{ creandoPartido() ? 'Creando...' : 'Crear partido' }}
+              </button>
+
+              @if (mensajeNuevoPartido()) {
+                <p class="text-sm font-medium text-center"
+                  [class.text-emerald-400]="mensajeNuevoPartido().includes('✅')"
+                  [class.text-red-400]="mensajeNuevoPartido().includes('❌')">
+                  {{ mensajeNuevoPartido() }}
+                </p>
+              }
+            </div>
+          </div>
+        }
       }
     }
 
