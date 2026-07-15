@@ -1,4 +1,5 @@
 const PrediccionEspecial = require('../models/PrediccionEspecial');
+const ResultadoEspecial = require('../models/ResultadoEspecial');
 const Equipo = require('../models/Equipo');
 const Usuario = require('../models/Usuario');
 const Jugador = require('../models/Jugador');
@@ -31,10 +32,7 @@ const guardarPrediccionEspecial = async (req, res) => {
     }
 
     // Comprobar si este tipo ya fue resuelto por el admin
-    const tipoResuelto = await PrediccionEspecial.findOne({
-      tipo,
-      puntosObtenidos: { $ne: null }
-    });
+    const tipoResuelto = await ResultadoEspecial.findOne({ tipo });
 
     if (tipoResuelto) {
       return res.status(400).json({ message: 'Esta predicción ya ha sido resuelta y no se puede cambiar' });
@@ -92,9 +90,7 @@ const getMisPrediccionesEspeciales = async (req, res) => {
     const predicciones = [...equiposPoblados, ...jugadoresPoblados];
 
     // 6. Obtener tipos ya resueltos globalmente
-    const tiposResueltos = await PrediccionEspecial.distinct('tipo', {
-      puntosObtenidos: { $ne: null }
-    });
+    const tiposResueltos = await ResultadoEspecial.distinct('tipo');
 
     res.json({ predicciones, tiposResueltos });
 
@@ -141,19 +137,19 @@ const getJugadores = async (req, res) => {
     res.status(500).json({ message: 'Error obteniendo jugadores', error: error.message });
   }
 };
+
 const resolverPrediccionEspecial = async (req, res) => {
   try {
     const { tipo, valorCorrecto } = req.body;
 
     // Bloquear si ya está resuelto
-    const yaResuelto = await PrediccionEspecial.findOne({
-      tipo,
-      puntosObtenidos: { $ne: null }
-    });
+    const yaResuelto = await ResultadoEspecial.findOne({ tipo });
 
     if (yaResuelto) {
       return res.status(400).json({ message: 'Esta predicción ya fue resuelta y no se puede cambiar' });
     }
+
+    const tipoValor = TIPOS_EQUIPO.includes(tipo) ? 'Equipo' : 'Jugador';
 
     const predicciones = await PrediccionEspecial.find({ tipo });
 
@@ -180,43 +176,35 @@ const resolverPrediccionEspecial = async (req, res) => {
       );
     }
 
-    // Guardar el valor correcto en un modelo aparte o en una colección de resultados
+    // Guardar el resultado oficial de forma independiente,
+    // así queda registrado aunque nadie lo haya acertado
+    await ResultadoEspecial.create({ tipo, tipoValor, valorCorrecto });
+
     res.json({ message: `Resuelto. ${acertaron.length} usuarios acertaron.`, valorCorrecto });
 
   } catch (error) {
     res.status(500).json({ message: 'Error resolviendo predicción', error: error.message });
   }
 };
+
 const getResultadosEspeciales = async (req, res) => {
   try {
-    const tipos = [
-      ...TIPOS_EQUIPO.map(t => ({ tipo: t, tipoValor: 'Equipo' })),
-      ...TIPOS_JUGADOR.map(t => ({ tipo: t, tipoValor: 'Jugador' }))
-    ];
-
+    const resultadosGuardados = await ResultadoEspecial.find().lean();
     const resultados = [];
 
-    for (const { tipo, tipoValor } of tipos) {
-      // Buscar solo predicciones con 1000 puntos (aciertos) para obtener el valor correcto
-      const resuelta = await PrediccionEspecial.findOne({
-        tipo,
-        puntosObtenidos: 1000   // ← aquí está el cambio clave
-      }).lean();
-
-      if (!resuelta) continue;
-
-      let valorCorrecto;
+    for (const { tipo, tipoValor, valorCorrecto } of resultadosGuardados) {
+      let valorPoblado;
       if (tipoValor === 'Equipo') {
-        valorCorrecto = await Equipo.findById(resuelta.valorPredicho).select('nombre bandera').lean();
+        valorPoblado = await Equipo.findById(valorCorrecto).select('nombre bandera').lean();
       } else {
-        valorCorrecto = await Jugador.findById(resuelta.valorPredicho)
+        valorPoblado = await Jugador.findById(valorCorrecto)
           .select('nombre posicion equipo')
           .populate('equipo', 'nombre bandera')
           .lean();
       }
 
-      if (valorCorrecto) {
-        resultados.push({ tipo, tipoValor, valorCorrecto });
+      if (valorPoblado) {
+        resultados.push({ tipo, tipoValor, valorCorrecto: valorPoblado });
       }
     }
 
@@ -225,16 +213,17 @@ const getResultadosEspeciales = async (req, res) => {
     res.status(500).json({ message: 'Error obteniendo resultados', error: error.message });
   }
 };
+
 const getEquiposConSub21 = async (req, res) => {
   try {
     const fechaLimite = new Date('2005-06-01');
-    
+
     const equiposConSub21 = await Jugador.distinct('equipo', {
       fechaNacimiento: { $gte: fechaLimite }
     });
 
-    const equipos = await Equipo.find({ 
-      _id: { $in: equiposConSub21 } 
+    const equipos = await Equipo.find({
+      _id: { $in: equiposConSub21 }
     }).select('nombre bandera').sort({ nombre: 1 });
 
     res.json(equipos);
@@ -242,6 +231,7 @@ const getEquiposConSub21 = async (req, res) => {
     res.status(500).json({ message: 'Error obteniendo equipos con sub21', error: error.message });
   }
 };
+
 const getPrediccionesEspecialesUsuario = async (req, res) => {
   try {
     const usuarioId = req.params.id;
@@ -289,6 +279,7 @@ const getPrediccionesEspecialesUsuario = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   guardarPrediccionEspecial,
   getMisPrediccionesEspeciales,
